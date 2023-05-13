@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"github.com/porky256/course-project/pkg/config"
+	"github.com/porky256/course-project/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,8 +14,8 @@ type Render struct {
 	app *config.AppConfig
 }
 
-func NewRender(app *config.AppConfig) Render {
-	return Render{
+func NewRender(app *config.AppConfig) *Render {
+	return &Render{
 		app: app,
 	}
 }
@@ -34,7 +35,6 @@ func (r *Render) RenderTemplateV1(w http.ResponseWriter, path string) {
 // RenderTemplateV2 deprecated
 func (r *Render) RenderTemplateV2(w http.ResponseWriter, path string) {
 
-	template.New("s").ParseFiles()
 	cached, inMap := templateCache[path]
 
 	if !inMap {
@@ -55,7 +55,7 @@ func (r *Render) RenderTemplateV2(w http.ResponseWriter, path string) {
 	}
 }
 
-func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string) {
+func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string, td *models.TemplateData) {
 	var templateCache map[string]*template.Template
 	var err error
 	if !r.app.UseCache {
@@ -73,7 +73,7 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string) {
 		return
 	}
 
-	err = pageTemplate.Execute(w, nil)
+	err = pageTemplate.Execute(w, td)
 	if err != nil {
 		log.Println("error occured while executing page template", err)
 	}

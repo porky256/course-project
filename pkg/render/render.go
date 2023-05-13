@@ -3,6 +3,7 @@ package render
 import (
 	"fmt"
 	"github.com/porky256/course-project/pkg/config"
+	"github.com/porky256/course-project/pkg/models"
 	"html/template"
 	"log"
 	"net/http"
@@ -54,7 +55,7 @@ func (r *Render) RenderTemplateV2(w http.ResponseWriter, path string) {
 	}
 }
 
-func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string) {
+func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string, td *models.TemplateData) {
 	var templateCache map[string]*template.Template
 	var err error
 	if !r.app.UseCache {
@@ -72,7 +73,7 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string) {
 		return
 	}
 
-	err = pageTemplate.Execute(w, nil)
+	err = pageTemplate.Execute(w, td)
 	if err != nil {
 		log.Println("error occured while executing page template", err)
 	}

@@ -21,9 +21,12 @@ func main() {
 	app.UseCache = false
 
 	newRender := render.NewRender(&app)
-	newHandler := handlers.NewHandlers(&app, &newRender)
+	newHandler := handlers.NewHandlers(&app, newRender)
 	http.HandleFunc("/", newHandler.Home)
 	http.HandleFunc("/about", newHandler.About)
-	http.ListenAndServe(port, nil)
+	err = http.ListenAndServe(port, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 	fmt.Println("starting application on port", port)
 }

@@ -11,8 +11,8 @@ type Handlers struct {
 	render *render.Render
 }
 
-func NewHandlers(app *config.AppConfig, render *render.Render) Handlers {
-	return Handlers{
+func NewHandlers(app *config.AppConfig, render *render.Render) *Handlers {
+	return &Handlers{
 		app:    app,
 		render: render,
 	}

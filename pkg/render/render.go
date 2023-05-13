@@ -13,8 +13,8 @@ type Render struct {
 	app *config.AppConfig
 }
 
-func NewRender(app *config.AppConfig) Render {
-	return Render{
+func NewRender(app *config.AppConfig) *Render {
+	return &Render{
 		app: app,
 	}
 }
@@ -34,7 +34,6 @@ func (r *Render) RenderTemplateV1(w http.ResponseWriter, path string) {
 // RenderTemplateV2 deprecated
 func (r *Render) RenderTemplateV2(w http.ResponseWriter, path string) {
 
-	template.New("s").ParseFiles()
 	cached, inMap := templateCache[path]
 
 	if !inMap {

@@ -22,9 +22,13 @@ func main() {
 
 	newRender := render.NewRender(&app)
 	newHandler := handlers.NewHandlers(&app, newRender)
-	http.HandleFunc("/", newHandler.Home)
-	http.HandleFunc("/about", newHandler.About)
-	err = http.ListenAndServe(port, nil)
+
+	server := http.Server{
+		Addr:    port,
+		Handler: routes(&app, newHandler),
+	}
+
+	err = server.ListenAndServe()
 	if err != nil {
 		log.Fatal(err)
 	}

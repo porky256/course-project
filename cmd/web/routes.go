@@ -10,9 +10,9 @@ import (
 
 func routes(app *config.AppConfig, handler *handlers.Handlers) http.Handler {
 	mux := chi.NewRouter()
-
 	mux.Use(middleware.Recoverer)
-	mux.Use(noSurf)
+	mux.Use(NoSurf)
+	mux.Use(SessionLoad)
 
 	mux.Get("/", http.HandlerFunc(handler.Home))
 	mux.Get("/about", http.HandlerFunc(handler.About))

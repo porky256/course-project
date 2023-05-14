@@ -20,13 +20,18 @@ func NewHandlers(app *config.AppConfig, render *render.Render) *Handlers {
 }
 
 func (h *Handlers) Home(w http.ResponseWriter, r *http.Request) {
+	remoteIP := r.RemoteAddr
+	h.app.Session.Put(r.Context(), "remote_ip", remoteIP)
 	h.render.RenderTemplateV3(w, "home.page.html", &models.TemplateData{})
 }
 
 func (h *Handlers) About(w http.ResponseWriter, r *http.Request) {
+	remoteIP := h.app.Session.GetString(r.Context(), "remote_ip")
 	stringMap := map[string]string{
-		"test": "testdata",
+		"test":      "testdata",
+		"remote_ip": remoteIP,
 	}
+
 	h.render.RenderTemplateV3(w, "about.page.html", &models.TemplateData{
 		StringMap: stringMap,
 	})

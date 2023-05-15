@@ -2,18 +2,33 @@ package main
 
 import (
 	"fmt"
+	"github.com/alexedwards/scs/v2"
 	"github.com/porky256/course-project/pkg/config"
 	"github.com/porky256/course-project/pkg/handlers"
 	"github.com/porky256/course-project/pkg/render"
 	"log"
 	"net/http"
+	"time"
 )
 
 const port = ":8080"
 
+// TODO move it to context
+var app config.AppConfig
+
 func main() {
-	var app config.AppConfig
 	cache, err := render.CreateTemplateCacheMap()
+
+	//change it when production
+	app.IsProduction = false
+
+	session := scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.IsProduction
+
+	app.Session = session
 	if err != nil {
 		log.Fatal("can't create template cache: ", err)
 	}

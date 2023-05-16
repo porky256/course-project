@@ -2,6 +2,7 @@ package render
 
 import (
 	"fmt"
+	"github.com/justinas/nosurf"
 	"github.com/porky256/course-project/pkg/config"
 	"github.com/porky256/course-project/pkg/models"
 	"html/template"
@@ -55,7 +56,7 @@ func (r *Render) RenderTemplateV2(w http.ResponseWriter, path string) {
 	}
 }
 
-func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string, td *models.TemplateData) {
+func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) {
 	var templateCache map[string]*template.Template
 	var err error
 	if !r.app.UseCache {
@@ -72,6 +73,7 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, path string, td *models
 		log.Println("asked page not found:", path)
 		return
 	}
+	td = AddDefaultData(td, req)
 
 	err = pageTemplate.Execute(w, td)
 	if err != nil {
@@ -124,4 +126,9 @@ func templateToCache(path string) error {
 	}
 	templateCache[path] = parsed
 	return nil
+}
+
+func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
+	td.CSRFToken = nosurf.Token(r)
+	return td
 }

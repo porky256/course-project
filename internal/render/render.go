@@ -21,41 +21,6 @@ func NewRender(app *config.AppConfig) *Render {
 	}
 }
 
-var templateCache = make(map[string]*template.Template)
-
-// RenderTemplateV1 deprecated
-func (r *Render) RenderTemplateV1(w http.ResponseWriter, path string) {
-
-	parsed, _ := template.ParseFiles("./templates/"+path, "./templates/base.layout.html")
-	err := parsed.Execute(w, nil)
-	if err != nil {
-		log.Println("error parsing template:", err.Error())
-	}
-}
-
-// RenderTemplateV2 deprecated
-func (r *Render) RenderTemplateV2(w http.ResponseWriter, path string) {
-
-	cached, inMap := templateCache[path]
-
-	if !inMap {
-		err := templateToCache(path)
-		if err != nil {
-			log.Println("error with template caching:", err.Error())
-			return
-		}
-		cached = templateCache[path]
-		log.Println("cashing:", path)
-	} else {
-		log.Println("using cached")
-	}
-
-	err := cached.Execute(w, nil)
-	if err != nil {
-		log.Println("error executing template:", err.Error())
-	}
-}
-
 func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) {
 	var templateCache map[string]*template.Template
 	var err error
@@ -73,7 +38,7 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path
 		log.Println("asked page not found:", path)
 		return
 	}
-	td = AddDefaultData(td, req)
+	td = r.addDefaultData(td, req)
 
 	err = pageTemplate.Execute(w, td)
 	if err != nil {
@@ -84,7 +49,7 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path
 func CreateTemplateCacheMap() (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	files, err := filepath.Glob("./templates/*page.html")
+	files, err := filepath.Glob("./templates/*page.tmpl")
 	if err != nil {
 		return cache, fmt.Errorf("error occurred while searching for page files: %s", err)
 	}
@@ -97,13 +62,13 @@ func CreateTemplateCacheMap() (map[string]*template.Template, error) {
 			return cache, fmt.Errorf("error occurred while parsing page: %s", err)
 		}
 
-		layouts, err := filepath.Glob("./templates/*layout.html")
+		layouts, err := filepath.Glob("./templates/*layout.tmpl")
 		if err != nil {
 			return cache, fmt.Errorf("error occurred while searching for layout files: %s", err)
 		}
 
 		if len(layouts) > 0 {
-			ts, err = ts.ParseGlob("./templates/*layout.html")
+			ts, err = ts.ParseGlob("./templates/*layout.tmpl")
 			if err != nil {
 				return cache, fmt.Errorf("error occurred while parsing layouts: %s", err)
 			}
@@ -115,20 +80,10 @@ func CreateTemplateCacheMap() (map[string]*template.Template, error) {
 	return cache, nil
 }
 
-func templateToCache(path string) error {
-	_, inMap := templateCache[path]
-	if inMap {
-		return fmt.Errorf("cached template already exists: %s", path)
-	}
-	parsed, err := template.ParseFiles("./templates/"+path, "./templates/base.layout.html")
-	if err != nil {
-		return fmt.Errorf("error parsing template: %s", err)
-	}
-	templateCache[path] = parsed
-	return nil
-}
-
-func AddDefaultData(td *models.TemplateData, r *http.Request) *models.TemplateData {
-	td.CSRFToken = nosurf.Token(r)
+func (r *Render) addDefaultData(td *models.TemplateData, req *http.Request) *models.TemplateData {
+	td.Flash = r.app.Session.PopString(req.Context(), "flash")
+	td.Error = r.app.Session.PopString(req.Context(), "error")
+	td.Warning = r.app.Session.PopString(req.Context(), "warning")
+	td.CSRFToken = nosurf.Token(req)
 	return td
 }

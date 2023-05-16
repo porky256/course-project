@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/porky256/course-project/pkg/config"
 	"github.com/porky256/course-project/pkg/models"
 	"github.com/porky256/course-project/pkg/render"
+	"log"
 	"net/http"
 )
 
@@ -58,4 +60,23 @@ func (h *Handlers) PostSearchAvailability(w http.ResponseWriter, r *http.Request
 	start := r.Form.Get("start")
 	end := r.Form.Get("end")
 	w.Write([]byte(fmt.Sprintf("start date: %s, end date: %s", start, end)))
+}
+
+type jsonExample struct {
+	OK      bool   `json:"ok"`
+	Message string `json:"message"`
+}
+
+func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request) {
+	req := jsonExample{
+		OK:      true,
+		Message: "example message",
+	}
+
+	out, err := json.MarshalIndent(req, "", "\t")
+	if err != nil {
+		log.Panic("json marshalling error", err)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(out)
 }

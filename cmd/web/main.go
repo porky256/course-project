@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/gob"
 	"fmt"
 	"github.com/alexedwards/scs/v2"
-	"github.com/porky256/course-project/pkg/config"
-	"github.com/porky256/course-project/pkg/handlers"
-	"github.com/porky256/course-project/pkg/render"
+	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/handlers"
+	"github.com/porky256/course-project/internal/models"
+	"github.com/porky256/course-project/internal/render"
 	"log"
 	"net/http"
 	"time"
@@ -17,6 +19,8 @@ const port = ":8080"
 var app config.AppConfig
 
 func main() {
+	gob.Register(models.Reservation{})
+
 	cache, err := render.CreateTemplateCacheMap()
 
 	//change it when production

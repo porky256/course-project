@@ -3,9 +3,9 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/porky256/course-project/pkg/config"
-	"github.com/porky256/course-project/pkg/models"
-	"github.com/porky256/course-project/pkg/render"
+	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/models"
+	"github.com/porky256/course-project/internal/render"
 	"log"
 	"net/http"
 )

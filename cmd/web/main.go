@@ -3,9 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/alexedwards/scs/v2"
-	"github.com/porky256/course-project/pkg/config"
-	"github.com/porky256/course-project/pkg/handlers"
-	"github.com/porky256/course-project/pkg/render"
+	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/handlers"
+	"github.com/porky256/course-project/internal/render"
 	"log"
 	"net/http"
 	"time"

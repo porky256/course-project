@@ -3,8 +3,8 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/porky256/course-project/pkg/config"
-	"github.com/porky256/course-project/pkg/handlers"
+	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/handlers"
 	"net/http"
 )
 

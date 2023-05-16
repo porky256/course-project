@@ -3,8 +3,8 @@ package render
 import (
 	"fmt"
 	"github.com/justinas/nosurf"
-	"github.com/porky256/course-project/pkg/config"
-	"github.com/porky256/course-project/pkg/models"
+	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/models"
 	"html/template"
 	"log"
 	"net/http"

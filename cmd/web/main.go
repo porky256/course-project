@@ -19,6 +19,29 @@ const port = ":8080"
 var app config.AppConfig
 
 func main() {
+	err := run()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	newRender := render.NewRender(&app)
+	newHandler := handlers.NewHandlers(&app, newRender)
+
+	server := http.Server{
+		Addr:    port,
+		Handler: routes(&app, newHandler),
+	}
+
+	err = server.ListenAndServe()
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("starting application on port", port)
+}
+
+// run registers and initializes application
+func run() error {
 	gob.Register(models.Reservation{})
 
 	cache, err := render.CreateTemplateCacheMap()
@@ -35,21 +58,9 @@ func main() {
 	app.Session = session
 	if err != nil {
 		log.Fatal("can't create template cache: ", err)
+		return err
 	}
 	app.TemplateCache = cache
 	app.UseCache = false
-
-	newRender := render.NewRender(&app)
-	newHandler := handlers.NewHandlers(&app, newRender)
-
-	server := http.Server{
-		Addr:    port,
-		Handler: routes(&app, newHandler),
-	}
-
-	err = server.ListenAndServe()
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Println("starting application on port", port)
+	return nil
 }

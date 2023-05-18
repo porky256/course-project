@@ -10,4 +10,5 @@ type AppConfig struct {
 	UseCache      bool
 	IsProduction  bool
 	Session       *scs.SessionManager
+	RootPath      string
 }

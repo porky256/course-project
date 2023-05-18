@@ -19,25 +19,11 @@ const port = ":8080"
 var app config.AppConfig
 
 func main() {
-	gob.Register(models.Reservation{})
-
-	cache, err := render.CreateTemplateCacheMap()
-
-	//change it when production
-	app.IsProduction = false
-
-	session := scs.New()
-	session.Lifetime = 24 * time.Hour
-	session.Cookie.Persist = true
-	session.Cookie.SameSite = http.SameSiteLaxMode
-	session.Cookie.Secure = app.IsProduction
-
-	app.Session = session
+	err := run()
 	if err != nil {
-		log.Fatal("can't create template cache: ", err)
+		log.Fatal(err)
+		return
 	}
-	app.TemplateCache = cache
-	app.UseCache = false
 
 	newRender := render.NewRender(&app)
 	newHandler := handlers.NewHandlers(&app, newRender)
@@ -52,4 +38,30 @@ func main() {
 		log.Fatal(err)
 	}
 	fmt.Println("starting application on port", port)
+}
+
+// run registers and initializes application
+func run() error {
+	gob.Register(models.Reservation{})
+
+	app.RootPath = "./"
+	cache, err := render.CreateTemplateCacheMap(&app)
+
+	//change it when production
+	app.IsProduction = false
+
+	session := scs.New()
+	session.Lifetime = 24 * time.Hour
+	session.Cookie.Persist = true
+	session.Cookie.SameSite = http.SameSiteLaxMode
+	session.Cookie.Secure = app.IsProduction
+
+	app.Session = session
+	if err != nil {
+		log.Fatal("can't create template cache: ", err)
+		return err
+	}
+	app.TemplateCache = cache
+	app.UseCache = false
+	return nil
 }

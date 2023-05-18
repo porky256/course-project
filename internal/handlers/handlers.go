@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/forms"
+	"github.com/porky256/course-project/internal/helpers"
 	"github.com/porky256/course-project/internal/models"
 	"github.com/porky256/course-project/internal/render"
-	"log"
 	"net/http"
 )
 
@@ -68,7 +68,7 @@ func (h *Handlers) MakeReservation(w http.ResponseWriter, r *http.Request) {
 func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
-		log.Println(err)
+		helpers.ServerError(w, err)
 		return
 	}
 
@@ -125,7 +125,8 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 
 	out, err := json.MarshalIndent(req, "", "\t")
 	if err != nil {
-		log.Println("json marshalling error", err)
+		helpers.ServerError(w, err)
+		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(out)
@@ -134,7 +135,7 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 func (h *Handlers) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	res, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
-		log.Println("can't find reservation")
+		h.app.ErrorLog.Println("Can't find reservation")
 		h.app.Session.Put(r.Context(), "error", "can't find reservation")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return

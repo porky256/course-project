@@ -6,10 +6,12 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/handlers"
+	"github.com/porky256/course-project/internal/helpers"
 	"github.com/porky256/course-project/internal/models"
 	"github.com/porky256/course-project/internal/render"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -35,7 +37,7 @@ func main() {
 
 	err = server.ListenAndServe()
 	if err != nil {
-		log.Fatal(err)
+		app.ErrorLog.Fatal(err)
 	}
 	fmt.Println("starting application on port", port)
 }
@@ -56,12 +58,17 @@ func run() error {
 	session.Cookie.SameSite = http.SameSiteLaxMode
 	session.Cookie.Secure = app.IsProduction
 
-	app.Session = session
-	if err != nil {
-		log.Fatal("can't create template cache: ", err)
-		return err
-	}
 	app.TemplateCache = cache
 	app.UseCache = false
+	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	app.Session = session
+	if err != nil {
+		app.ErrorLog.Fatal("can't create template cache: ", err)
+		return err
+	}
+
+	helpers.NewHelpers(&app)
 	return nil
 }

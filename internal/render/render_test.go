@@ -5,8 +5,11 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/helpers"
 	"github.com/porky256/course-project/internal/models"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -29,6 +32,9 @@ var _ = Describe("Render", func() {
 			Session:  session,
 			RootPath: "./../..",
 		}
+		app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+		app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+		helpers.NewHelpers(&app)
 		render = NewRender(&app)
 	})
 
@@ -81,5 +87,25 @@ var _ = Describe("Render", func() {
 			Expect(cachedPages).To(ContainElements(templateNames))
 			Expect(templateNames).To(ContainElements(cachedPages))
 		})
+	})
+
+	Context("RenderTemplateV3", func() {
+		var ww mockWriter
+		BeforeEach(func() {
+			tc, err := CreateTemplateCacheMap(&app)
+			Expect(err).ToNot(HaveOccurred())
+			app.TemplateCache = tc
+			ww = mockWriter{}
+		})
+		It("test with real page", func() {
+			err := render.RenderTemplateV3(&ww, request, "home.page.tmpl", &models.TemplateData{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("test with non-existing page", func() {
+			err := render.RenderTemplateV3(&ww, request, "non-existent.page.tmpl", &models.TemplateData{})
+			Expect(err).To(HaveOccurred())
+		})
+
 	})
 })

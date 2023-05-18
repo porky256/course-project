@@ -25,7 +25,7 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path
 	var templateCache map[string]*template.Template
 	var err error
 	if !r.app.UseCache {
-		templateCache, err = CreateTemplateCacheMap()
+		templateCache, err = CreateTemplateCacheMap(r.app)
 	} else {
 		templateCache = r.app.TemplateCache
 	}
@@ -42,14 +42,14 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path
 
 	err = pageTemplate.Execute(w, td)
 	if err != nil {
-		log.Println("error occured while executing page template", err)
+		log.Println("error occurred while executing page template", err)
 	}
 }
 
-func CreateTemplateCacheMap() (map[string]*template.Template, error) {
+func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	files, err := filepath.Glob("./templates/*page.tmpl")
+	files, err := filepath.Glob(app.RootPath + "/templates/*page.tmpl")
 	if err != nil {
 		return cache, fmt.Errorf("error occurred while searching for page files: %s", err)
 	}
@@ -62,13 +62,13 @@ func CreateTemplateCacheMap() (map[string]*template.Template, error) {
 			return cache, fmt.Errorf("error occurred while parsing page: %s", err)
 		}
 
-		layouts, err := filepath.Glob("./templates/*layout.tmpl")
+		layouts, err := filepath.Glob(app.RootPath + "/templates/*layout.tmpl")
 		if err != nil {
 			return cache, fmt.Errorf("error occurred while searching for layout files: %s", err)
 		}
 
 		if len(layouts) > 0 {
-			ts, err = ts.ParseGlob("./templates/*layout.tmpl")
+			ts, err = ts.ParseGlob(app.RootPath + "/templates/*layout.tmpl")
 			if err != nil {
 				return cache, fmt.Errorf("error occurred while parsing layouts: %s", err)
 			}

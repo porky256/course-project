@@ -1,4 +1,4 @@
-package main
+package render
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestWeb(t *testing.T) {
+func TestRender(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Web Suite")
+	RunSpecs(t, "Render Suite")
 }

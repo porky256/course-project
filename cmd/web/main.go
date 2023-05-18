@@ -44,7 +44,8 @@ func main() {
 func run() error {
 	gob.Register(models.Reservation{})
 
-	cache, err := render.CreateTemplateCacheMap()
+	app.RootPath = "./"
+	cache, err := render.CreateTemplateCacheMap(&app)
 
 	//change it when production
 	app.IsProduction = false

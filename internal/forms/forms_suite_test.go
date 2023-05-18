@@ -1,4 +1,4 @@
-package main
+package forms_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestWeb(t *testing.T) {
+func TestForms(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Web Suite")
+	RunSpecs(t, "Forms Suite")
 }

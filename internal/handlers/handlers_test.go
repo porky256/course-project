@@ -22,6 +22,8 @@ type params struct {
 	value string
 }
 
+var app config.AppConfig
+
 var _ = Describe("Handlers", Ordered, func() {
 
 	var getTestCases = []struct {
@@ -61,10 +63,9 @@ var _ = Describe("Handlers", Ordered, func() {
 	}
 
 	var server *httptest.Server
-	var app config.AppConfig
 	BeforeAll(func() {
 		gob.Register(models.Reservation{})
-		app = config.AppConfig{Session: scs.New()}
+		app = config.AppConfig{Session: scs.New(), UseCache: false, RootPath: "./../.."}
 		r := render.NewRender(&app)
 		h := handlers.NewHandlers(&app, r)
 		server = httptest.NewTLSServer(routes(h))
@@ -114,6 +115,7 @@ var _ = Describe("Handlers", Ordered, func() {
 func routes(handler *handlers.Handlers) http.Handler {
 	mux := chi.NewRouter()
 	mux.Use(middleware.Recoverer)
+	mux.Use(SessionLoad)
 
 	fileServer := http.FileServer(http.Dir("./static/"))
 	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
@@ -135,4 +137,8 @@ func routes(handler *handlers.Handlers) http.Handler {
 	mux.Get("/contact", http.HandlerFunc(handler.Contact))
 
 	return mux
+}
+
+func SessionLoad(next http.Handler) http.Handler {
+	return app.Session.LoadAndSave(next)
 }

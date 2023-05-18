@@ -10,11 +10,14 @@ import (
 	. "github.com/onsi/gomega"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/handlers"
+	"github.com/porky256/course-project/internal/helpers"
 	"github.com/porky256/course-project/internal/models"
 	"github.com/porky256/course-project/internal/render"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
 )
 
 type params struct {
@@ -66,6 +69,9 @@ var _ = Describe("Handlers", Ordered, func() {
 	BeforeAll(func() {
 		gob.Register(models.Reservation{})
 		app = config.AppConfig{Session: scs.New(), UseCache: false, RootPath: "./../.."}
+		app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+		app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+		helpers.NewHelpers(&app)
 		r := render.NewRender(&app)
 		h := handlers.NewHandlers(&app, r)
 		server = httptest.NewTLSServer(routes(h))

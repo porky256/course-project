@@ -5,8 +5,11 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/helpers"
 	"github.com/porky256/course-project/internal/models"
+	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 )
 
@@ -29,6 +32,9 @@ var _ = Describe("Render", func() {
 			Session:  session,
 			RootPath: "./../..",
 		}
+		app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+		app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+		helpers.NewHelpers(&app)
 		render = NewRender(&app)
 	})
 

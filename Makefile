@@ -18,7 +18,7 @@ install:
 
 .PHONY: test
 test:
-	ginkgo ./...
+	ginkgo -r -race --trace ./...
 
 .PHONY: test-coverage
 test-coverage:

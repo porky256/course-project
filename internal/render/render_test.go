@@ -82,4 +82,24 @@ var _ = Describe("Render", func() {
 			Expect(templateNames).To(ContainElements(cachedPages))
 		})
 	})
+
+	Context("RenderTemplateV3", func() {
+		var ww mockWriter
+		BeforeEach(func() {
+			tc, err := CreateTemplateCacheMap(&app)
+			Expect(err).ToNot(HaveOccurred())
+			app.TemplateCache = tc
+			ww = mockWriter{}
+		})
+		It("test with real page", func() {
+			err := render.RenderTemplateV3(&ww, request, "home.page.tmpl", &models.TemplateData{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("test with non-existing page", func() {
+			err := render.RenderTemplateV3(&ww, request, "non-existent.page.tmpl", &models.TemplateData{})
+			Expect(err).To(HaveOccurred())
+		})
+
+	})
 })

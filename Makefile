@@ -19,3 +19,11 @@ install:
 .PHONY: test
 test:
 	ginkgo ./...
+
+.PHONY: test-coverage
+test-coverage:
+	ginkgo -r -v -race --trace  --coverprofile=.coverage-report.out ./...
+
+.PHONY: show-test-coverage
+show-test-coverage: test-coverage
+	go tool cover -html=.coverage-report.out

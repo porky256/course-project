@@ -21,7 +21,7 @@ func NewRender(app *config.AppConfig) *Render {
 	}
 }
 
-func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) {
+func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) error {
 	var templateCache map[string]*template.Template
 	var err error
 	if !r.app.UseCache {
@@ -31,19 +31,21 @@ func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path
 	}
 	if err != nil {
 		log.Println("error occurred while creating template cache", err)
-		return
+		return err
 	}
 	pageTemplate, ok := templateCache[path]
 	if !ok {
 		log.Println("asked page not found:", path)
-		return
+		return fmt.Errorf("asked page not found: %s", path)
 	}
 	td = r.addDefaultData(td, req)
 
 	err = pageTemplate.Execute(w, td)
 	if err != nil {
 		log.Println("error occurred while executing page template", err)
+		return err
 	}
+	return nil
 }
 
 func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Template, error) {

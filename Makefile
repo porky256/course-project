@@ -1,4 +1,3 @@
-#SHELL :=/bin/zsh
 #export GOPATH:=/Users/anatoly.saukhin/GO
 #export GOBIN:=${GOPATH}/bin
 #export PATH:=${GOBIN}:${PATH}
@@ -27,3 +26,25 @@ test-coverage:
 .PHONY: show-test-coverage
 show-test-coverage: test-coverage
 	go tool cover -html=.coverage-report.out
+
+.PHONY: build-db
+build-db:
+	docker-compose build db
+
+.PHONY: run-db
+run-db:
+	docker-compose up db
+
+.PHONY: stop
+stop:
+	docker-compose stop
+
+migration-up:
+	printenv
+	migrate -path cmd/web/data/migrations -database 'postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@0.0.0.0:5432/$(POSTGRES_DB)?sslmode=disable' up
+
+migration-down:
+	migrate -path cmd/web/data/migrations -database 'postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@0.0.0.0:5432/$(POSTGRES_DB)?sslmode=disable' down
+
+create-new-migration:
+	migrate create -ext .sql -dir cmd/web/data/migrations

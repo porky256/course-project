@@ -27,10 +27,6 @@ test-coverage:
 show-test-coverage: test-coverage
 	go tool cover -html=.coverage-report.out
 
-.PHONY: build-db
-build-db:
-	docker-compose build db
-
 .PHONY: run-db
 run-db:
 	docker-compose up db

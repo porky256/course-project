@@ -28,6 +28,7 @@ func routes(app *config.AppConfig, handler *handlers.Handlers) http.Handler {
 	mux.Get("/search-availability", http.HandlerFunc(handler.SearchAvailability))
 	mux.Post("/search-availability", http.HandlerFunc(handler.PostSearchAvailability))
 	mux.Post("/search-availability-json", http.HandlerFunc(handler.SearchAvailabilityJson))
+	mux.Get("/choose-room/{id}", http.HandlerFunc(handler.ChooseRoom))
 
 	mux.Get("/reservation-summary", http.HandlerFunc(handler.ReservationSummary))
 

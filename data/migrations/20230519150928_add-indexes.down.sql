@@ -1,0 +1,3 @@
+DROP INDEX users_email_idx;
+
+DROP INDEX room_restrictions_start_date_end_date_idx;

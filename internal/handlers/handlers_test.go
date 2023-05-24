@@ -9,6 +9,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/driver"
 	"github.com/porky256/course-project/internal/handlers"
 	"github.com/porky256/course-project/internal/helpers"
 	"github.com/porky256/course-project/internal/models"
@@ -73,7 +74,7 @@ var _ = Describe("Handlers", Ordered, func() {
 		app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 		helpers.NewHelpers(&app)
 		r := render.NewRender(&app)
-		h := handlers.NewHandlers(&app, r)
+		h := handlers.NewHandlers(&app, r, &driver.DB{})
 		server = httptest.NewTLSServer(routes(h))
 	})
 

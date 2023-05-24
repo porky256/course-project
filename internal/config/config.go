@@ -14,4 +14,5 @@ type AppConfig struct {
 	RootPath      string
 	InfoLog       *log.Logger
 	ErrorLog      *log.Logger
+	DateLayout    string
 }

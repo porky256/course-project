@@ -5,6 +5,7 @@ import (
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/porky256/course-project/internal/config"
+	"github.com/porky256/course-project/internal/driver"
 	"github.com/porky256/course-project/internal/handlers"
 	"github.com/porky256/course-project/internal/render"
 )
@@ -22,7 +23,7 @@ var _ = Describe("Routes private functions", func() {
 		BeforeEach(func() {
 			app = config.AppConfig{}
 			r = render.NewRender(&app)
-			h = handlers.NewHandlers(&app, r)
+			h = handlers.NewHandlers(&app, r, &driver.DB{})
 		})
 
 		It("Check if routes added correctly", func() {

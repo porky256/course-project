@@ -1,7 +1,9 @@
 #export GOPATH:=/Users/anatoly.saukhin/GO
 #export GOBIN:=${GOPATH}/bin
 #export PATH:=${GOBIN}:${PATH}
-
+export POSTGRES_USER=postgres
+export POSTGRES_PASSWORD=2341
+export POSTGRES_DB=db
 
 .PHONY: build
 build:
@@ -31,8 +33,8 @@ show-test-coverage: test-coverage
 run-db:
 	docker-compose up db
 
-.PHONY: stop
-stop:
+.PHONY: stop-db
+stop-db:
 	docker-compose stop
 
 migration-up:
@@ -43,4 +45,4 @@ migration-down:
 	migrate -path data/migrations -database 'postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@0.0.0.0:5432/$(POSTGRES_DB)?sslmode=disable' down
 
 create-new-migration:
-	migrate create -ext .sql -dir data/migrations
+	migrate create -ext .sql -dir data/migrations seed-restrictions

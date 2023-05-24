@@ -226,16 +226,46 @@ func (h *Handlers) PostSearchAvailability(w http.ResponseWriter, r *http.Request
 	return
 }
 
-type jsonExample struct {
-	OK      bool   `json:"ok"`
-	Message string `json:"message"`
+type jsonResponse struct {
+	OK        bool   `json:"ok"`
+	StartDate string `json:"start_date"`
+	EndDate   string `json:"end_date"`
+	RoomID    string `json:"room_id"`
 }
 
 // SearchAvailabilityJson handles request for availability and sends JSON response
 func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request) {
-	req := jsonExample{
-		OK:      true,
-		Message: "example message",
+	sd := r.Form.Get("start")
+	ed := r.Form.Get("end")
+	startDate, err := time.Parse(h.app.DateLayout, sd)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+	endDate, err := time.Parse(h.app.DateLayout, ed)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+
+	rid := r.Form.Get("room_id")
+	roomID, err := strconv.Atoi(rid)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+
+	ok, err := h.DB.LookForAvailabilityOfRoom(startDate, endDate, roomID)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+
+	req := jsonResponse{
+		OK:        ok,
+		StartDate: sd,
+		EndDate:   ed,
+		RoomID:    rid,
 	}
 
 	out, err := json.MarshalIndent(req, "", "\t")
@@ -291,6 +321,41 @@ func (h *Handlers) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	res.RoomID = roomID
+	h.app.Session.Put(r.Context(), "reservation", res)
+	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
+}
+
+func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
+	roomID, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+	sd := r.URL.Query().Get("s")
+	ed := r.URL.Query().Get("e")
+	startDate, err := time.Parse(h.app.DateLayout, sd)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+	endDate, err := time.Parse(h.app.DateLayout, ed)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+	room, err := h.DB.GetRoom(roomID)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		return
+	}
+
+	res := models.Reservation{
+		StartDate: startDate,
+		EndDate:   endDate,
+		RoomID:    roomID,
+		Room:      room,
+	}
+
 	h.app.Session.Put(r.Context(), "reservation", res)
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
 }

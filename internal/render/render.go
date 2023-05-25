@@ -51,7 +51,7 @@ func (r *Render) Template(w http.ResponseWriter, req *http.Request, path string,
 func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
-	files, err := filepath.Glob(app.RootPath + "/templates/*page.tmpl")
+	files, err := filepath.Glob(app.RootPath + "/static/templates/*page.tmpl")
 	if err != nil {
 		app.ErrorLog.Println("error occurred while searching for page files:", err)
 		return cache, fmt.Errorf("error occurred while searching for page files: %s", err)
@@ -66,14 +66,14 @@ func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Templat
 			return cache, fmt.Errorf("error occurred while parsing page: %s", err)
 		}
 
-		layouts, err := filepath.Glob(app.RootPath + "/templates/*layout.tmpl")
+		layouts, err := filepath.Glob(app.RootPath + "/static/templates/*layout.tmpl")
 		if err != nil {
 			app.ErrorLog.Println("error occurred while searching for layout files:", err)
 			return cache, fmt.Errorf("error occurred while searching for layout files: %s", err)
 		}
 
 		if len(layouts) > 0 {
-			ts, err = ts.ParseGlob(app.RootPath + "/templates/*layout.tmpl")
+			ts, err = ts.ParseGlob(app.RootPath + "/static/templates/*layout.tmpl")
 			if err != nil {
 				app.ErrorLog.Println("error occurred while parsing layouts:", err)
 				return cache, fmt.Errorf("error occurred while parsing layouts: %s", err)

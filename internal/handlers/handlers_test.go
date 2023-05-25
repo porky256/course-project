@@ -45,11 +45,18 @@ var _ = Describe("Handlers", Ordered, func() {
 		app.DateLayout = "2006-01-02"
 		app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 		app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+		app.MailChan = make(chan models.MailData, 100)
 		helpers.NewHelpers(&app)
 		r := render.NewRender(&app)
 		mockDB = mock_dbrepo.NewMockDatabaseRepo(ctrl)
 		h = handlers.NewTestHandlers(&app, r, mockDB)
 		server = httptest.NewTLSServer(routes(h))
+	})
+
+	AfterAll(func() {
+		server.Close()
+		ctrl.Finish()
+		close(app.MailChan)
 	})
 
 	Context("basic handlers", func() {
@@ -164,7 +171,10 @@ var _ = Describe("Handlers", Ordered, func() {
 		It("normal", func() {
 			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
 			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(1, nil)
-
+			mockDB.EXPECT().GetRoom(gomock.Any()).Return(&models.Room{
+				ID:       1,
+				RoomName: "room name",
+			}, nil)
 			doall(&basicVal, &basicRes, http.StatusSeeOther, "", "/some-url", "POST")
 		})
 
@@ -189,9 +199,19 @@ var _ = Describe("Handlers", Ordered, func() {
 		It("can't insert room restriction", func() {
 			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
 			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(0, errors.New("can't insert room restriction"))
-
 			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "can't insert room restriction", "/some-url", "POST")
 		})
+
+		It("room is invalid", func() {
+			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
+			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(1, nil)
+			mockDB.EXPECT().GetRoom(gomock.Eq(3)).Return(nil, errors.New("no such room"))
+			basicVal.Set("room_id", "3")
+			basicRes.RoomID = 3
+
+			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "no such room", "/some-url", "POST")
+		})
+
 	})
 
 	Context("PostSearchAvailability", func() {
@@ -359,10 +379,6 @@ var _ = Describe("Handlers", Ordered, func() {
 		})
 	})
 
-	AfterAll(func() {
-		server.Close()
-		ctrl.Finish()
-	})
 })
 
 func routes(handler *handlers.Handlers) http.Handler {

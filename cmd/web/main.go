@@ -28,6 +28,7 @@ func main() {
 		app.ErrorLog.Fatal(err)
 		return
 	}
+
 	fmt.Println("Connecting to DB...")
 	db, err := driver.ConnectSQL(dbconfig)
 	if err != nil {
@@ -36,6 +37,10 @@ func main() {
 	}
 	fmt.Println("Connection established")
 	defer db.DB.Close()
+
+	defer close(app.MailChan)
+	listenForEmail()
+
 	newRender := render.NewRender(&app)
 	newHandler := handlers.NewHandlers(&app, newRender, db)
 
@@ -83,6 +88,7 @@ func run() error {
 	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.DateLayout = "2006-01-02"
+	app.MailChan = make(chan models.MailData)
 
 	app.Session = session
 	if err != nil {

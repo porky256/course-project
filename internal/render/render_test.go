@@ -89,7 +89,7 @@ var _ = Describe("Render", func() {
 		})
 	})
 
-	Context("RenderTemplateV3", func() {
+	Context("Template", func() {
 		var ww mockWriter
 		BeforeEach(func() {
 			tc, err := CreateTemplateCacheMap(&app)
@@ -98,12 +98,12 @@ var _ = Describe("Render", func() {
 			ww = mockWriter{}
 		})
 		It("test with real page", func() {
-			err := render.RenderTemplateV3(&ww, request, "home.page.tmpl", &models.TemplateData{})
+			err := render.Template(&ww, request, "home.page.tmpl", &models.TemplateData{})
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("test with non-existing page", func() {
-			err := render.RenderTemplateV3(&ww, request, "non-existent.page.tmpl", &models.TemplateData{})
+			err := render.Template(&ww, request, "non-existent.page.tmpl", &models.TemplateData{})
 			Expect(err).To(HaveOccurred())
 		})
 

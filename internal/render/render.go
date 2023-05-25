@@ -21,7 +21,7 @@ func NewRender(app *config.AppConfig) *Render {
 	}
 }
 
-func (r *Render) RenderTemplateV3(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) error {
+func (r *Render) Template(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) error {
 	var templateCache map[string]*template.Template
 	var err error
 	if !r.app.UseCache {

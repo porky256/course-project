@@ -6,9 +6,13 @@ require (
 	github.com/alexedwards/scs/v2 v2.5.1
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2
 	github.com/go-chi/chi/v5 v5.0.8
+	github.com/golang/mock v1.6.0
 	github.com/justinas/nosurf v1.1.1
 	github.com/onsi/ginkgo/v2 v2.9.5
 	github.com/onsi/gomega v1.27.6
+	github.com/uptrace/bun v1.1.13
+	github.com/uptrace/bun/dialect/pgdialect v1.1.13
+	github.com/uptrace/bun/driver/pgdriver v1.1.13
 )
 
 require (
@@ -19,9 +23,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/stretchr/testify v1.8.2 // indirect
 	github.com/tmthrgd/go-hex v0.0.0-20190904060850-447a3041c3bc // indirect
-	github.com/uptrace/bun v1.1.13 // indirect
-	github.com/uptrace/bun/dialect/pgdialect v1.1.13 // indirect
-	github.com/uptrace/bun/driver/pgdriver v1.1.13 // indirect
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/crypto v0.8.0 // indirect

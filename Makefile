@@ -19,7 +19,7 @@ install:
 
 .PHONY: test
 test:
-	ginkgo -r -race --trace ./...
+	go test -failfast ./...
 
 .PHONY: test-coverage
 test-coverage:

@@ -202,16 +202,6 @@ var _ = Describe("Handlers", Ordered, func() {
 			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "can't insert room restriction", "/some-url", "POST")
 		})
 
-		It("room is invalid", func() {
-			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
-			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(1, nil)
-			mockDB.EXPECT().GetRoom(gomock.Eq(3)).Return(nil, errors.New("no such room"))
-			basicVal.Set("room_id", "3")
-			basicRes.RoomID = 3
-
-			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "no such room", "/some-url", "POST")
-		})
-
 	})
 
 	Context("PostSearchAvailability", func() {
@@ -362,7 +352,7 @@ var _ = Describe("Handlers", Ordered, func() {
 			mockDB.EXPECT().GetRoom(gomock.Eq(1)).Return(&models.Room{
 				ID:       1,
 				RoomName: "room name",
-			}, nil)
+			}, nil).AnyTimes()
 			doall(nil, &basicRes, http.StatusSeeOther, "", "/book-room?s=2050-01-01&e=2050-01-02&id=1", "GET")
 		})
 

@@ -384,7 +384,6 @@ func (h *Handlers) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 	roomID, err := strconv.Atoi(r.URL.Query().Get("id"))
-	fmt.Println("roomID", roomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't find such room")
@@ -407,7 +406,7 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
-
+	fmt.Println("calling get room with id:", roomID)
 	room, err := h.DB.GetRoom(roomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
@@ -425,4 +424,13 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 
 	h.app.Session.Put(r.Context(), "reservation", res)
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
+}
+
+func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
+	err := h.render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+	}
 }

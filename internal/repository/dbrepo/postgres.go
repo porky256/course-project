@@ -2,7 +2,9 @@ package dbrepo
 
 import (
 	"context"
+	"errors"
 	"github.com/porky256/course-project/internal/models"
+	"golang.org/x/crypto/bcrypt"
 	"time"
 )
 
@@ -92,4 +94,35 @@ func (pdb *postgressDB) GetRoomByID(id int) (*models.Room, error) {
 	room := new(models.Room)
 	err := pdb.DB.NewSelect().Model(&room).Where("id==?", id).Scan(ctx)
 	return room, err
+}
+
+func (pdb *postgressDB) GetUserByID(id int) (*models.User, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+	user := new(models.User)
+	err := pdb.DB.NewSelect().Model(&user).Where("id==?", id).Scan(ctx)
+	return user, err
+}
+
+func (pdb *postgressDB) Authenticate(email, passwordSample string) (int, string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	user := new(models.User)
+	err := pdb.DB.NewSelect().Model(user).Where("email==?", email).Scan(ctx)
+
+	if err != nil {
+		return 0, "", err
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(passwordSample))
+	if err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			return 0, "", errors.New("password is incorrect")
+		} else {
+			return 0, "", err
+		}
+	}
+
+	return user.ID, user.Password, nil
 }

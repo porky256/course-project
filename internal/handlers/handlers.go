@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/driver"
@@ -129,7 +130,7 @@ func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	reservation, ok := h.app.Session.Pop(r.Context(), "reservation").(models.Reservation)
+	reservation, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
 		h.app.ErrorLog.Printf("cannot find reservation")
 		h.app.Session.Put(r.Context(), "error", "cannot find reservation")
@@ -163,13 +164,14 @@ func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 	}
 	h.app.InfoLog.Printf("saving to db reservation: %+v\n", reservation)
 	newID, err := h.DB.InsertReservation(&reservation)
-	h.app.InfoLog.Println("new reservation's id is: ", newID)
+	err = errors.New("zalupa")
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't insert reservation")
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
+	h.app.InfoLog.Println("new reservation's id is: ", newID)
 
 	rmrs := models.RoomRestriction{
 		StartDate:     reservation.StartDate,
@@ -212,7 +214,6 @@ func (h *Handlers) PostSearchAvailability(w http.ResponseWriter, r *http.Request
 
 	start := r.Form.Get("start")
 	end := r.Form.Get("end")
-	fmt.Println(start, end)
 	startDate, err := time.Parse(h.app.DateLayout, start)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
@@ -406,7 +407,6 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
-	fmt.Println("calling get room with id:", roomID)
 	room, err := h.DB.GetRoom(roomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
@@ -457,16 +457,24 @@ func (h *Handlers) PostLogin(w http.ResponseWriter, r *http.Request) {
 	form := forms.New(r.PostForm)
 
 	form.Required("email", "password")
+	form.IsEmail("email")
 
 	if !form.Valid() {
-
+		err = h.render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		if err != nil {
+			h.app.ErrorLog.Println(err)
+		}
+		return
 	}
 
 	id, _, err := h.DB.Authenticate(email, password)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
-		h.app.Session.Put(r.Context(), "error", "wrong password")
-		http.Redirect(w, r, "/user/login", http.StatusTemporaryRedirect)
+		fmt.Println("ya obosralsya")
+		h.app.Session.Put(r.Context(), "error", "Invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 		return
 	}
 

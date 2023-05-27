@@ -92,7 +92,7 @@ func (pdb *postgressDB) GetRoomByID(id int) (*models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	room := new(models.Room)
-	err := pdb.DB.NewSelect().Model(&room).Where("id==?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(&room).Where("id=?", id).Scan(ctx)
 	return room, err
 }
 
@@ -100,7 +100,7 @@ func (pdb *postgressDB) GetUserByID(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	user := new(models.User)
-	err := pdb.DB.NewSelect().Model(&user).Where("id==?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(&user).Where("id=?", id).Scan(ctx)
 	return user, err
 }
 
@@ -109,7 +109,7 @@ func (pdb *postgressDB) Authenticate(email, passwordSample string) (int, string,
 	defer cancel()
 
 	user := new(models.User)
-	err := pdb.DB.NewSelect().Model(user).Where("email==?", email).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(user).Where("email=?", email).Scan(ctx)
 
 	if err != nil {
 		return 0, "", err

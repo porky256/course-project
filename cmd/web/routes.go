@@ -36,5 +36,6 @@ func routes(app *config.AppConfig, handler *handlers.Handlers) http.Handler {
 	mux.Get("/contact", http.HandlerFunc(handler.Contact))
 
 	mux.Get("/user/login", http.HandlerFunc(handler.Login))
+	mux.Post("/user/login", http.HandlerFunc(handler.PostLogin))
 	return mux
 }

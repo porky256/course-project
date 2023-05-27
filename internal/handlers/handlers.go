@@ -434,3 +434,43 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 		h.app.ErrorLog.Println(err)
 	}
 }
+
+func (h *Handlers) PostLogin(w http.ResponseWriter, r *http.Request) {
+	err := h.app.Session.RenewToken(r.Context())
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		http.Redirect(w, r, "/user/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "bad form")
+		http.Redirect(w, r, "/user/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	form := forms.New(r.PostForm)
+
+	form.Required("email", "password")
+
+	if !form.Valid() {
+
+	}
+
+	id, _, err := h.DB.Authenticate(email, password)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "wrong password")
+		http.Redirect(w, r, "/user/login", http.StatusTemporaryRedirect)
+		return
+	}
+
+	h.app.Session.Put(r.Context(), "user_id", id)
+	h.app.Session.Put(r.Context(), "flash", "Authenticated successfully!")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}

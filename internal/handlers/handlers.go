@@ -26,7 +26,7 @@ func NewHandlers(app *config.AppConfig, render *render.Render, db *driver.DB) *H
 	return &Handlers{
 		app:    app,
 		render: render,
-		DB:     dbrepo.NewPostgressDB(db.DB, app),
+		DB:     dbrepo.NewPostgresDB(db.DB, app),
 	}
 }
 
@@ -87,7 +87,7 @@ func (h *Handlers) MakeReservation(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	room, err := h.DB.GetRoom(res.RoomID)
+	room, err := h.DB.GetRoomByID(res.RoomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "no such room")
@@ -329,6 +329,7 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// ReservationSummary handles request for reservation summary
 func (h *Handlers) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	res, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
@@ -358,6 +359,7 @@ func (h *Handlers) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ChooseRoom handles request to choose room
 func (h *Handlers) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.URL.RequestURI(), "/")
 	roomID, err := strconv.Atoi(exploded[2])
@@ -379,6 +381,7 @@ func (h *Handlers) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
 }
 
+// BookRoom handles request to book room
 func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 	roomID, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
@@ -403,7 +406,7 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	room, err := h.DB.GetRoom(roomID)
+	room, err := h.DB.GetRoomByID(roomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "no such room")
@@ -422,6 +425,7 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
 }
 
+// Login handles request to login
 func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	err := h.render.Template(w, r, "login.page.tmpl", &models.TemplateData{
 		Form: forms.New(nil),
@@ -431,6 +435,7 @@ func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// PostLogin handles request to post login
 func (h *Handlers) PostLogin(w http.ResponseWriter, r *http.Request) {
 	err := h.app.Session.RenewToken(r.Context())
 	if err != nil {

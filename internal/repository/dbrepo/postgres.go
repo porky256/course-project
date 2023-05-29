@@ -12,7 +12,8 @@ const (
 	queryTimeout = 3 * time.Second
 )
 
-func (pdb *postgressDB) InsertReservation(res *models.Reservation) (int, error) {
+// InsertReservation inserts a reservation
+func (pdb *postgresDB) InsertReservation(res *models.Reservation) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	var newID int
@@ -20,7 +21,8 @@ func (pdb *postgressDB) InsertReservation(res *models.Reservation) (int, error) 
 	return newID, err
 }
 
-func (pdb *postgressDB) InsertRoom(room *models.Room) (int, error) {
+// InsertRoom inserts a room
+func (pdb *postgresDB) InsertRoom(room *models.Room) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	var newID int
@@ -28,7 +30,8 @@ func (pdb *postgressDB) InsertRoom(room *models.Room) (int, error) {
 	return newID, err
 }
 
-func (pdb *postgressDB) InsertUser(user *models.User) (int, error) {
+// InsertUser inserts an user
+func (pdb *postgresDB) InsertUser(user *models.User) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	var newID int
@@ -36,7 +39,8 @@ func (pdb *postgressDB) InsertUser(user *models.User) (int, error) {
 	return newID, err
 }
 
-func (pdb *postgressDB) InsertRestriction(res *models.Restriction) (int, error) {
+// InsertRestriction inserts a restriction
+func (pdb *postgresDB) InsertRestriction(res *models.Restriction) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	var newID int
@@ -44,7 +48,8 @@ func (pdb *postgressDB) InsertRestriction(res *models.Restriction) (int, error) 
 	return newID, err
 }
 
-func (pdb *postgressDB) InsertRoomRestriction(rmres *models.RoomRestriction) (int, error) {
+// InsertRoomRestriction inserts a room restriction
+func (pdb *postgresDB) InsertRoomRestriction(rmres *models.RoomRestriction) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	var newID int
@@ -52,15 +57,8 @@ func (pdb *postgressDB) InsertRoomRestriction(rmres *models.RoomRestriction) (in
 	return newID, err
 }
 
-func (pdb *postgressDB) GetRoom(id int) (*models.Room, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
-	defer cancel()
-	res := new(models.Room)
-	err := pdb.DB.NewSelect().Model(res).Where("id = ?", id).Scan(ctx)
-	return res, err
-}
-
-func (pdb *postgressDB) LookForAvailabilityOfRoom(start, end time.Time, roomID int) (bool, error) {
+// LookForAvailabilityOfRoom looks if the room is available
+func (pdb *postgresDB) LookForAvailabilityOfRoom(start, end time.Time, roomID int) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	numberRows, err := pdb.DB.NewSelect().
@@ -72,7 +70,8 @@ func (pdb *postgressDB) LookForAvailabilityOfRoom(start, end time.Time, roomID i
 	return numberRows == 0, err
 }
 
-func (pdb *postgressDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.Room, error) {
+// AvailabilityOfAllRooms looks for any room available on passed dates
+func (pdb *postgresDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	var rooms []models.Room
@@ -88,7 +87,8 @@ func (pdb *postgressDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.R
 	return rooms, err
 }
 
-func (pdb *postgressDB) GetRoomByID(id int) (*models.Room, error) {
+// GetRoomByID looks for room by id
+func (pdb *postgresDB) GetRoomByID(id int) (*models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	room := new(models.Room)
@@ -96,7 +96,8 @@ func (pdb *postgressDB) GetRoomByID(id int) (*models.Room, error) {
 	return room, err
 }
 
-func (pdb *postgressDB) GetUserByID(id int) (*models.User, error) {
+// GetUserByID looks for user by id
+func (pdb *postgresDB) GetUserByID(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	user := new(models.User)
@@ -104,7 +105,8 @@ func (pdb *postgressDB) GetUserByID(id int) (*models.User, error) {
 	return user, err
 }
 
-func (pdb *postgressDB) Authenticate(email, passwordSample string) (int, string, error) {
+// Authenticate checks if user is known and password is correct
+func (pdb *postgresDB) Authenticate(email, passwordSample string) (int, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 

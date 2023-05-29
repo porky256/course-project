@@ -95,5 +95,8 @@ func (r *Render) addDefaultData(td *models.TemplateData, req *http.Request) *mod
 	td.Error = r.app.Session.PopString(req.Context(), "error")
 	td.Warning = r.app.Session.PopString(req.Context(), "warning")
 	td.CSRFToken = nosurf.Token(req)
+	if r.app.Session.Exists(req.Context(), "user_id") {
+		td.IsAuthenticated = 1
+	}
 	return td
 }

@@ -482,3 +482,29 @@ func (h *Handlers) PostLogin(w http.ResponseWriter, r *http.Request) {
 	h.app.Session.Put(r.Context(), "flash", "Authenticated successfully!")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
+
+// Logout handles request to logout
+func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
+	err := h.app.Session.Destroy(r.Context())
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "Error with logging out")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	err = h.app.Session.RenewToken(r.Context())
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "Error with logging out")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *Handlers) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	err := h.render.Template(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{})
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+	}
+}

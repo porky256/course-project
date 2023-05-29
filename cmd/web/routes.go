@@ -35,5 +35,17 @@ func routes(app *config.AppConfig, handler *handlers.Handlers) http.Handler {
 
 	mux.Get("/contact", http.HandlerFunc(handler.Contact))
 
+	mux.Get("/user/login", http.HandlerFunc(handler.Login))
+	mux.Post("/user/login", http.HandlerFunc(handler.PostLogin))
+
+	mux.Get("/user/logout", http.HandlerFunc(handler.Logout))
+
+	mux.Group(func(r chi.Router) {
+		r.Use(Auth)
+		r.Route("/admin", func(r chi.Router) {
+			r.Get("/dashboard", http.HandlerFunc(handler.AdminDashboard))
+		})
+	})
+
 	return mux
 }

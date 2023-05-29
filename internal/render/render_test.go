@@ -73,7 +73,7 @@ var _ = Describe("Render", func() {
 		It("Check if function works correctly", func() {
 			cache, err := CreateTemplateCacheMap(render.app)
 			Expect(err).ToNot(HaveOccurred())
-			files, err := filepath.Glob(app.RootPath + "/templates/*page.tmpl")
+			files, err := filepath.Glob(app.RootPath + "/static/templates/*page.tmpl")
 			var cachedPages []string
 			for k := range cache {
 				cachedPages = append(cachedPages, k)

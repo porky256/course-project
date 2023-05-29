@@ -74,6 +74,13 @@
                 <li class="nav-item">
                     <a class="nav-link" href="/contact">Contact</a>
                 </li>
+                <li class="nav-item">
+                    {{if eq .IsAuthenticated 1}}
+                        <a class="nav-link" href="/user/logout" tabindex="-1" aria-disabled="true">Logout</a>
+                    {{else}}
+                        <a class="nav-link" href="/user/login" tabindex="-1" aria-disabled="true">Login</a>
+                    {{end}}
+                </li>
 
             </ul>
         </div>
@@ -109,7 +116,7 @@
     <script src="https://cdn.jsdelivr.net/npm/vanillajs-datepicker@1.1.2/dist/js/datepicker-full.min.js"></script>
     <script src="https://unpkg.com/notie"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10.15.5/dist/sweetalert2.min.js"></script>
-    <script src="static/js/app.js"></script>
+    <script src="/static/js/app.js"></script>
 
     {{block "js" .}}
 

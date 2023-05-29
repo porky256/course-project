@@ -15,12 +15,14 @@ type Render struct {
 	app *config.AppConfig
 }
 
+// NewRender creates new render entity
 func NewRender(app *config.AppConfig) *Render {
 	return &Render{
 		app: app,
 	}
 }
 
+// Template renders a page based on template
 func (r *Render) Template(w http.ResponseWriter, req *http.Request, path string, td *models.TemplateData) error {
 	var templateCache map[string]*template.Template
 	var err error
@@ -48,6 +50,7 @@ func (r *Render) Template(w http.ResponseWriter, req *http.Request, path string,
 	return nil
 }
 
+// CreateTemplateCacheMap creates cache for page templates
 func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Template, error) {
 	cache := map[string]*template.Template{}
 
@@ -86,10 +89,14 @@ func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Templat
 	return cache, nil
 }
 
+// addDefaultData adds default data
 func (r *Render) addDefaultData(td *models.TemplateData, req *http.Request) *models.TemplateData {
 	td.Flash = r.app.Session.PopString(req.Context(), "flash")
 	td.Error = r.app.Session.PopString(req.Context(), "error")
 	td.Warning = r.app.Session.PopString(req.Context(), "warning")
 	td.CSRFToken = nosurf.Token(req)
+	if r.app.Session.Exists(req.Context(), "user_id") {
+		td.IsAuthenticated = 1
+	}
 	return td
 }

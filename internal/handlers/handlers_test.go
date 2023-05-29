@@ -141,11 +141,11 @@ var _ = Describe("Handlers", Ordered, func() {
 		It("test with incorrect room", func() {
 			mockDB.EXPECT().GetRoom(gomock.Eq(100)).Return(nil, errors.New("no such room"))
 			basicRes.RoomID = 100
-			doall(nil, &basicRes, http.StatusTemporaryRedirect, "no such room", "/some-url", "GET")
+			doall(nil, &basicRes, http.StatusSeeOther, "no such room", "/some-url", "GET")
 		})
 
 		It("test with insufficient reservation", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "can't find reservation", "/some-url", "GET")
+			doall(nil, nil, http.StatusSeeOther, "can't find reservation", "/some-url", "GET")
 		})
 	})
 
@@ -179,37 +179,27 @@ var _ = Describe("Handlers", Ordered, func() {
 		})
 
 		It("bad form", func() {
-			doall(nil, &basicRes, http.StatusTemporaryRedirect, "bad form", "/some-url", "POST")
+			doall(nil, &basicRes, http.StatusSeeOther, "bad form", "/some-url", "POST")
 		})
 
 		It("no reservation", func() {
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "cannot find reservation", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "cannot find reservation", "/some-url", "POST")
 		})
 
 		It("form is invalid", func() {
 			basicVal.Set("first_name", "")
-			doall(&basicVal, &basicRes, http.StatusSeeOther, "", "/some-url", "POST")
+			doall(&basicVal, &basicRes, http.StatusOK, "", "/some-url", "POST")
 		})
 
 		It("can't insert reservation", func() {
 			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(0, errors.New("can't insert reservation"))
-			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "can't insert reservation", "/some-url", "POST")
+			doall(&basicVal, &basicRes, http.StatusSeeOther, "can't insert reservation", "/some-url", "POST")
 		})
 
 		It("can't insert room restriction", func() {
 			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
 			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(0, errors.New("can't insert room restriction"))
-			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "can't insert room restriction", "/some-url", "POST")
-		})
-
-		It("room is invalid", func() {
-			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
-			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(1, nil)
-			mockDB.EXPECT().GetRoom(gomock.Eq(3)).Return(nil, errors.New("no such room"))
-			basicVal.Set("room_id", "3")
-			basicRes.RoomID = 3
-
-			doall(&basicVal, &basicRes, http.StatusTemporaryRedirect, "no such room", "/some-url", "POST")
+			doall(&basicVal, &basicRes, http.StatusSeeOther, "can't insert room restriction", "/some-url", "POST")
 		})
 
 	})
@@ -240,22 +230,22 @@ var _ = Describe("Handlers", Ordered, func() {
 		})
 
 		It("bad form", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "bad form", "/some-url", "POST")
+			doall(nil, nil, http.StatusSeeOther, "bad form", "/some-url", "POST")
 		})
 
 		It("bad start", func() {
 			basicVal.Set("start", "bad")
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "bad start time", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "bad start time", "/some-url", "POST")
 		})
 
 		It("bad end", func() {
 			basicVal.Set("end", "bad")
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "bad end time", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "bad end time", "/some-url", "POST")
 		})
 
 		It("AvailabilityOfAllRooms error", func() {
 			mockDB.EXPECT().AvailabilityOfAllRooms(gomock.Any(), gomock.Any()).Return(nil, errors.New("text"))
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "can't get rooms", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "can't get rooms", "/some-url", "POST")
 		})
 
 		It("no available rooms", func() {
@@ -282,27 +272,27 @@ var _ = Describe("Handlers", Ordered, func() {
 		})
 
 		It("bad form", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "bad form", "/some-url", "POST")
+			doall(nil, nil, http.StatusSeeOther, "bad form", "/some-url", "POST")
 		})
 
 		It("bad start", func() {
 			basicVal.Set("start", "bad")
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "bad start time", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "bad start time", "/some-url", "POST")
 		})
 
 		It("bad end", func() {
 			basicVal.Set("end", "bad")
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "bad end time", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "bad end time", "/some-url", "POST")
 		})
 
 		It("bad room id", func() {
 			basicVal.Set("room_id", "bad")
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "bad room id", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "bad room id", "/some-url", "POST")
 		})
 
 		It("AvailabilityOfAllRooms error", func() {
 			mockDB.EXPECT().LookForAvailabilityOfRoom(gomock.Any(), gomock.Any(), gomock.Any()).Return(false, errors.New("text"))
-			doall(&basicVal, nil, http.StatusTemporaryRedirect, "problem with searching room", "/some-url", "POST")
+			doall(&basicVal, nil, http.StatusSeeOther, "problem with searching room", "/some-url", "POST")
 		})
 	})
 
@@ -327,7 +317,7 @@ var _ = Describe("Handlers", Ordered, func() {
 		})
 
 		It("test with insufficient reservation", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "can't find reservation", "/some-url", "GET")
+			doall(nil, nil, http.StatusSeeOther, "can't find reservation", "/some-url", "GET")
 		})
 	})
 
@@ -343,11 +333,11 @@ var _ = Describe("Handlers", Ordered, func() {
 		})
 
 		It("test with insufficient room id", func() {
-			doall(nil, &basicRes, http.StatusTemporaryRedirect, "can't find such room", "/choose-room/f", "GET")
+			doall(nil, &basicRes, http.StatusSeeOther, "can't find such room", "/choose-room/f", "GET")
 		})
 
 		It("test with insufficient reservation", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "can't find reservation", "/choose-room/1", "GET")
+			doall(nil, nil, http.StatusSeeOther, "can't find reservation", "/choose-room/1", "GET")
 		})
 	})
 
@@ -362,20 +352,20 @@ var _ = Describe("Handlers", Ordered, func() {
 			mockDB.EXPECT().GetRoom(gomock.Eq(1)).Return(&models.Room{
 				ID:       1,
 				RoomName: "room name",
-			}, nil)
+			}, nil).AnyTimes()
 			doall(nil, &basicRes, http.StatusSeeOther, "", "/book-room?s=2050-01-01&e=2050-01-02&id=1", "GET")
 		})
 
 		It("bad start", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "bad start time", "/book-room?s=insufficient&e=2050-01-02&id=1", "GET")
+			doall(nil, nil, http.StatusSeeOther, "bad start time", "/book-room?s=insufficient&e=2050-01-02&id=1", "GET")
 		})
 
 		It("bad end", func() {
-			doall(nil, nil, http.StatusTemporaryRedirect, "bad end time", "/book-room?s=2050-01-01&e=insufficient&id=1", "GET")
+			doall(nil, nil, http.StatusSeeOther, "bad end time", "/book-room?s=2050-01-01&e=insufficient&id=1", "GET")
 		})
 
 		It("test with insufficient room id", func() {
-			doall(nil, &basicRes, http.StatusTemporaryRedirect, "can't find such room", "/book-room?s=2050-01-01&e=insufficient&id=insufficient", "GET")
+			doall(nil, &basicRes, http.StatusSeeOther, "can't find such room", "/book-room?s=2050-01-01&e=insufficient&id=insufficient", "GET")
 		})
 	})
 

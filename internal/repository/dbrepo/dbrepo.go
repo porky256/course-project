@@ -6,13 +6,14 @@ import (
 	"github.com/uptrace/bun"
 )
 
-type postgressDB struct {
+type postgresDB struct {
 	App *config.AppConfig
 	DB  *bun.DB
 }
 
-func NewPostgressDB(conn *bun.DB, a *config.AppConfig) repository.DatabaseRepo {
-	return &postgressDB{
+// NewPostgresDB creates a new postgres DB entity
+func NewPostgresDB(conn *bun.DB, a *config.AppConfig) repository.DatabaseRepo {
+	return &postgresDB{
 		App: a,
 		DB:  conn,
 	}

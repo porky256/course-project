@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/driver"
 	"github.com/porky256/course-project/internal/forms"
@@ -27,7 +26,7 @@ func NewHandlers(app *config.AppConfig, render *render.Render, db *driver.DB) *H
 	return &Handlers{
 		app:    app,
 		render: render,
-		DB:     dbrepo.NewPostgressDB(db.DB, app),
+		DB:     dbrepo.NewPostgresDB(db.DB, app),
 	}
 }
 
@@ -81,18 +80,18 @@ func (h *Handlers) MajorsSuite(w http.ResponseWriter, r *http.Request) {
 
 // MakeReservation renders make reservation page
 func (h *Handlers) MakeReservation(w http.ResponseWriter, r *http.Request) {
-	res, ok := h.app.Session.Pop(r.Context(), "reservation").(models.Reservation)
+	res, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
 		h.app.ErrorLog.Printf("can't find reservation")
 		h.app.Session.Put(r.Context(), "error", "can't find reservation")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-	room, err := h.DB.GetRoom(res.RoomID)
+	room, err := h.DB.GetRoomByID(res.RoomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "no such room")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	res.Room = room
@@ -125,15 +124,15 @@ func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad form")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
-	reservation, ok := h.app.Session.Pop(r.Context(), "reservation").(models.Reservation)
+	reservation, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
 		h.app.ErrorLog.Printf("cannot find reservation")
 		h.app.Session.Put(r.Context(), "error", "cannot find reservation")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -151,7 +150,6 @@ func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 	if !form.Valid() {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation
-		http.Error(w, "form is invalid", http.StatusSeeOther)
 		err := h.render.Template(w, r, "make-reservation.page.tmpl", &models.TemplateData{
 			Form: form,
 			Data: data,
@@ -163,13 +161,13 @@ func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 	}
 	h.app.InfoLog.Printf("saving to db reservation: %+v\n", reservation)
 	newID, err := h.DB.InsertReservation(&reservation)
-	h.app.InfoLog.Println("new reservation's id is: ", newID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't insert reservation")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
+	h.app.InfoLog.Println("new reservation's id is: ", newID)
 
 	rmrs := models.RoomRestriction{
 		StartDate:     reservation.StartDate,
@@ -182,7 +180,7 @@ func (h *Handlers) PostMakeReservation(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't insert room restriction")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	rmrs.ID = rmrsID
@@ -206,32 +204,31 @@ func (h *Handlers) PostSearchAvailability(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad form")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
 	start := r.Form.Get("start")
 	end := r.Form.Get("end")
-	fmt.Println(start, end)
 	startDate, err := time.Parse(h.app.DateLayout, start)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad start time")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	endDate, err := time.Parse(h.app.DateLayout, end)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad end time")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	rooms, err := h.DB.AvailabilityOfAllRooms(startDate, endDate)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't get rooms")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	if len(rooms) == 0 {
@@ -273,7 +270,7 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad form")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	sd := r.Form.Get("start")
@@ -283,14 +280,14 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad start time")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	endDate, err := time.Parse(h.app.DateLayout, ed)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad end time")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -299,7 +296,7 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad room id")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -307,7 +304,7 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "problem with searching room")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -322,7 +319,7 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "json marshalling error")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -332,12 +329,13 @@ func (h *Handlers) SearchAvailabilityJson(w http.ResponseWriter, r *http.Request
 	}
 }
 
+// ReservationSummary handles request for reservation summary
 func (h *Handlers) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	res, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
 		h.app.ErrorLog.Println("Can't find reservation >:(")
 		h.app.Session.Put(r.Context(), "error", "can't find reservation")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -361,20 +359,21 @@ func (h *Handlers) ReservationSummary(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// ChooseRoom handles request to choose room
 func (h *Handlers) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.URL.RequestURI(), "/")
 	roomID, err := strconv.Atoi(exploded[2])
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't find such room")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	res, ok := h.app.Session.Get(r.Context(), "reservation").(models.Reservation)
 	if !ok {
 		h.app.ErrorLog.Printf("cannot find reservation")
 		h.app.Session.Put(r.Context(), "error", "can't find reservation")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	res.RoomID = roomID
@@ -382,13 +381,13 @@ func (h *Handlers) ChooseRoom(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
 }
 
+// BookRoom handles request to book room
 func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 	roomID, err := strconv.Atoi(r.URL.Query().Get("id"))
-	fmt.Println("roomID", roomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't find such room")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	sd := r.URL.Query().Get("s")
@@ -397,22 +396,21 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad start time")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 	endDate, err := time.Parse(h.app.DateLayout, ed)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "bad end time")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
-
-	room, err := h.DB.GetRoom(roomID)
+	room, err := h.DB.GetRoomByID(roomID)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "no such room")
-		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 		return
 	}
 
@@ -425,4 +423,88 @@ func (h *Handlers) BookRoom(w http.ResponseWriter, r *http.Request) {
 
 	h.app.Session.Put(r.Context(), "reservation", res)
 	http.Redirect(w, r, "/make-reservation", http.StatusSeeOther)
+}
+
+// Login handles request to login
+func (h *Handlers) Login(w http.ResponseWriter, r *http.Request) {
+	err := h.render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+		Form: forms.New(nil),
+	})
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+	}
+}
+
+// PostLogin handles request to post login
+func (h *Handlers) PostLogin(w http.ResponseWriter, r *http.Request) {
+	err := h.app.Session.RenewToken(r.Context())
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "bad form")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	email := r.Form.Get("email")
+	password := r.Form.Get("password")
+
+	form := forms.New(r.PostForm)
+
+	form.Required("email", "password")
+	form.IsEmail("email")
+
+	if !form.Valid() {
+		err = h.render.Template(w, r, "login.page.tmpl", &models.TemplateData{
+			Form: form,
+		})
+		if err != nil {
+			h.app.ErrorLog.Println(err)
+		}
+		return
+	}
+
+	id, _, err := h.DB.Authenticate(email, password)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "Invalid login credentials")
+		http.Redirect(w, r, "/user/login", http.StatusSeeOther)
+		return
+	}
+
+	h.app.Session.Put(r.Context(), "user_id", id)
+	h.app.Session.Put(r.Context(), "flash", "Authenticated successfully!")
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+// Logout handles request to logout
+func (h *Handlers) Logout(w http.ResponseWriter, r *http.Request) {
+	err := h.app.Session.Destroy(r.Context())
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "Error with logging out")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	err = h.app.Session.RenewToken(r.Context())
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "Error with logging out")
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+	http.Redirect(w, r, "/", http.StatusSeeOther)
+}
+
+func (h *Handlers) AdminDashboard(w http.ResponseWriter, r *http.Request) {
+	err := h.render.Template(w, r, "admin-dashboard.page.tmpl", &models.TemplateData{})
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+	}
 }

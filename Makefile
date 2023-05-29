@@ -9,9 +9,21 @@ export POSTGRES_DB=db
 build:
 	go build -o bookings ./cmd/web/.
 
+.PHONY: air
+air:
+	cd ./cmd/web && air -c .air.toml
+
 .PHONY: run
 run: build
 	 ./bookings
+
+.PHONY: run-docker
+run-docker:
+	docker-compose up booking
+
+.PHONY: stop-docker
+stop-docker:
+	docker-compose stop booking
 
 .PHONY: install
 install:
@@ -35,7 +47,7 @@ run-db:
 
 .PHONY: stop-db
 stop-db:
-	docker-compose stop
+	docker-compose stop db
 
 migration-up:
 	printenv

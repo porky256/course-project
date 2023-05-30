@@ -48,6 +48,9 @@ func routes(app *config.AppConfig, handler *handlers.Handlers) http.Handler {
 		r.Get("/all-reservations", http.HandlerFunc(handler.AdminAllReservations))
 		r.Get("/reservation-calendar", http.HandlerFunc(handler.AdminReservationCalendar))
 		r.Get("/reservations/{src}/{id}", http.HandlerFunc(handler.AdminSingleReservation))
+		r.Post("/reservations/{src}/{id}", http.HandlerFunc(handler.AdminPostSingleReservation))
+		r.Get("/process-reservation/{src}/{id}", http.HandlerFunc(handler.AdminProcessReservation))
+		r.Get("/delete-reservation/{src}/{id}", http.HandlerFunc(handler.AdminDeleteReservation))
 	})
 
 	return mux

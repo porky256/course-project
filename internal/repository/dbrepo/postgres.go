@@ -161,3 +161,36 @@ func (pdb *postgresDB) GetReservationByID(id int) (*models.Reservation, error) {
 
 	return reservation, err
 }
+
+// UpdateReservation updates reservation
+func (pdb *postgresDB) UpdateReservation(ur models.Reservation) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	_, err := pdb.DB.NewUpdate().Model(&ur).
+		Column("first_name", "last_name", "email", "phone").
+		WherePK().Exec(ctx)
+	return err
+}
+
+// DeleteReservation deletes reservation
+func (pdb *postgresDB) DeleteReservationByID(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	_, err := pdb.DB.NewDelete().Table("reservations").Where("id=?", id).Exec(ctx)
+	return err
+}
+
+// UpdateReservationProcessed updates is_processed field in reservation
+func (pdb *postgresDB) UpdateReservationProcessed(id, processed int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	modelToUpdate := models.Reservation{
+		ID:          id,
+		IsProcessed: processed,
+	}
+	_, err := pdb.DB.NewUpdate().Model(&modelToUpdate).WherePK().Column("is_processed").Exec(ctx)
+	return err
+}

@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/porky256/course-project/internal/forms"
 	"github.com/porky256/course-project/internal/models"
 	"net/http"
@@ -60,20 +61,25 @@ func (h *Handlers) AdminReservationCalendar(w http.ResponseWriter, r *http.Reque
 
 func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.RequestURI, "/")
+	if len(exploded) != 5 {
+		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+	}
+
 	stringMap := make(map[string]string)
 	stringMap["src"] = exploded[3]
 	id, err := strconv.Atoi(exploded[4])
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "wrong id")
-		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
 		return
 	}
 	reservation, err := h.DB.GetReservationByID(id)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't find reservation")
-		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
 		return
 	}
 	data := make(map[string]interface{})
@@ -86,4 +92,101 @@ func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 	}
+}
+
+func (h *Handlers) AdminPostSingleReservation(w http.ResponseWriter, r *http.Request) {
+	exploded := strings.Split(r.RequestURI, "/")
+
+	if len(exploded) != 5 {
+		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+	}
+	id, err := strconv.Atoi(exploded[4])
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "wrong id")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "bad form")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	reservation := models.Reservation{}
+
+	reservation.FirstName = r.Form.Get("first_name")
+	reservation.LastName = r.Form.Get("last_name")
+	reservation.Email = r.Form.Get("email")
+	reservation.Phone = r.Form.Get("phone")
+	reservation.ID = id
+
+	err = h.DB.UpdateReservation(reservation)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "can't update reservation")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	h.app.Session.Put(r.Context(), "flash", "reservation updated")
+	http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+}
+
+func (h *Handlers) AdminProcessReservation(w http.ResponseWriter, r *http.Request) {
+	exploded := strings.Split(r.RequestURI, "/")
+
+	if len(exploded) != 5 {
+		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+	}
+	id, err := strconv.Atoi(exploded[4])
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "wrong id")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	err = h.DB.UpdateReservationProcessed(id, 1)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "can't update reservation")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	h.app.Session.Put(r.Context(), "flash", "reservation is marked as processed")
+	http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+}
+
+func (h *Handlers) AdminDeleteReservation(w http.ResponseWriter, r *http.Request) {
+	exploded := strings.Split(r.RequestURI, "/")
+
+	if len(exploded) != 5 {
+		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+	}
+	id, err := strconv.Atoi(exploded[4])
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "wrong id")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	err = h.DB.DeleteReservationByID(id)
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "can't update reservation")
+		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		return
+	}
+
+	h.app.Session.Put(r.Context(), "flash", "reservation is deleted")
+	http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
 }

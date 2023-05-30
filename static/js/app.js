@@ -162,12 +162,6 @@ function singleRoomChooseDates(c) {
                 document.getElementById("start").removeAttribute("disabled");
                 document.getElementById("end").removeAttribute("disabled");
             },
-            preConfirm: () => {
-                return [
-                    document.getElementById('start').value,
-                    document.getElementById('end').value
-                ]
-            },
             callback: function (result) {
                 console.log("called");
 

@@ -66,6 +66,20 @@ func (mr *MockDatabaseRepoMockRecorder) AvailabilityOfAllRooms(start, end interf
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AvailabilityOfAllRooms", reflect.TypeOf((*MockDatabaseRepo)(nil).AvailabilityOfAllRooms), start, end)
 }
 
+// DeleteReservationByID mocks base method.
+func (m *MockDatabaseRepo) DeleteReservationByID(id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteReservationByID", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteReservationByID indicates an expected call of DeleteReservationByID.
+func (mr *MockDatabaseRepoMockRecorder) DeleteReservationByID(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReservationByID", reflect.TypeOf((*MockDatabaseRepo)(nil).DeleteReservationByID), id)
+}
+
 // GetAllReservations mocks base method.
 func (m *MockDatabaseRepo) GetAllReservations() ([]models.Reservation, error) {
 	m.ctrl.T.Helper()
@@ -229,4 +243,32 @@ func (m *MockDatabaseRepo) LookForAvailabilityOfRoom(start, end time.Time, roomI
 func (mr *MockDatabaseRepoMockRecorder) LookForAvailabilityOfRoom(start, end, roomID interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookForAvailabilityOfRoom", reflect.TypeOf((*MockDatabaseRepo)(nil).LookForAvailabilityOfRoom), start, end, roomID)
+}
+
+// UpdateReservation mocks base method.
+func (m *MockDatabaseRepo) UpdateReservation(ur models.Reservation) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateReservation", ur)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateReservation indicates an expected call of UpdateReservation.
+func (mr *MockDatabaseRepoMockRecorder) UpdateReservation(ur interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReservation", reflect.TypeOf((*MockDatabaseRepo)(nil).UpdateReservation), ur)
+}
+
+// UpdateReservationProcessed mocks base method.
+func (m *MockDatabaseRepo) UpdateReservationProcessed(id, processed int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateReservationProcessed", id, processed)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateReservationProcessed indicates an expected call of UpdateReservationProcessed.
+func (mr *MockDatabaseRepoMockRecorder) UpdateReservationProcessed(id, processed interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateReservationProcessed", reflect.TypeOf((*MockDatabaseRepo)(nil).UpdateReservationProcessed), id, processed)
 }

@@ -54,6 +54,7 @@ func main() {
 	if err != nil {
 		app.ErrorLog.Fatal(err)
 	}
+	time.Date(1, 2, 3, 4, 5, 6, 7, time.UTC)
 }
 
 // run registers and initializes application

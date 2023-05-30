@@ -11,7 +11,7 @@ build:
 
 .PHONY: air
 air:
-	cd ./cmd/web && air -c .air.toml
+	air -c .air.toml
 
 .PHONY: run
 run: build
@@ -48,6 +48,10 @@ run-db:
 .PHONY: stop-db
 stop-db:
 	docker-compose stop db
+
+.PHONY: gen-repo-mock
+gen-repo-mock:
+	mockgen -source ./internal/repository/repository.go -destination ./internal/repository/mock/mock.go
 
 migration-up:
 	printenv

@@ -128,3 +128,13 @@ func (pdb *postgresDB) Authenticate(email, passwordSample string) (int, string, 
 
 	return user.ID, user.Password, nil
 }
+
+func (pdb *postgresDB) GetAllReservations() ([]models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	reservations := make([]models.Reservation, 0)
+	err := pdb.DB.NewSelect().Model(&reservations).Relation("Room").Scan(ctx)
+
+	return reservations, err
+}

@@ -60,7 +60,7 @@ func (h *Handlers) PostLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.app.Session.Put(r.Context(), "user_id", id)
-	h.app.Session.Put(r.Context(), "flash", "Authenticated successfully!")
+	//h.app.Session.Put(r.Context(), "flash", "Authenticated successfully!")
 	http.Redirect(w, r, "/", http.StatusSeeOther)
 }
 

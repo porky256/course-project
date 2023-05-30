@@ -57,7 +57,7 @@ func (pdb *postgresDB) InsertRoomRestriction(rmres *models.RoomRestriction) (int
 	return newID, err
 }
 
-// LookForAvailabilityOfRoom looks if the room is available
+// LookForAvailabilityOfRoom search if the room is available
 func (pdb *postgresDB) LookForAvailabilityOfRoom(start, end time.Time, roomID int) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
@@ -70,7 +70,7 @@ func (pdb *postgresDB) LookForAvailabilityOfRoom(start, end time.Time, roomID in
 	return numberRows == 0, err
 }
 
-// AvailabilityOfAllRooms looks for any room available on passed dates
+// AvailabilityOfAllRooms search for any room available on passed dates
 func (pdb *postgresDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
@@ -87,21 +87,21 @@ func (pdb *postgresDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.Ro
 	return rooms, err
 }
 
-// GetRoomByID looks for room by id
+// GetRoomByID search for room by id
 func (pdb *postgresDB) GetRoomByID(id int) (*models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	room := new(models.Room)
-	err := pdb.DB.NewSelect().Model(&room).Where("id=?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(room).Where("id=?", id).Scan(ctx)
 	return room, err
 }
 
-// GetUserByID looks for user by id
+// GetUserByID search for user by id
 func (pdb *postgresDB) GetUserByID(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	user := new(models.User)
-	err := pdb.DB.NewSelect().Model(&user).Where("id=?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(user).Where("id=?", id).Scan(ctx)
 	return user, err
 }
 
@@ -129,6 +129,7 @@ func (pdb *postgresDB) Authenticate(email, passwordSample string) (int, string, 
 	return user.ID, user.Password, nil
 }
 
+// GetAllReservations search for all reservations
 func (pdb *postgresDB) GetAllReservations() ([]models.Reservation, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
@@ -137,4 +138,26 @@ func (pdb *postgresDB) GetAllReservations() ([]models.Reservation, error) {
 	err := pdb.DB.NewSelect().Model(&reservations).Relation("Room").Scan(ctx)
 
 	return reservations, err
+}
+
+// GetNewReservations search for new reservations
+func (pdb *postgresDB) GetNewReservations() ([]models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	reservations := make([]models.Reservation, 0)
+	err := pdb.DB.NewSelect().Model(&reservations).Relation("Room").Where("is_processed=0").Scan(ctx)
+
+	return reservations, err
+}
+
+// GetReservationByID search for reservation by id
+func (pdb *postgresDB) GetReservationByID(id int) (*models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	reservation := new(models.Reservation)
+	err := pdb.DB.NewSelect().Model(reservation).Relation("Room").Where("id=?", id).Scan(ctx)
+
+	return reservation, err
 }

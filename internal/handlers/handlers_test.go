@@ -132,8 +132,8 @@ var _ = Describe("Handlers", Ordered, func() {
 
 		It("test with right data", func() {
 			mockDB.EXPECT().GetRoom(gomock.Eq(1)).Return(&models.Room{
-				ID:       1,
-				RoomName: "room name",
+				ID:   1,
+				Name: "room name",
 			}, nil)
 			doall(nil, &basicRes, http.StatusOK, "", "/some-url", "GET")
 		})
@@ -172,8 +172,8 @@ var _ = Describe("Handlers", Ordered, func() {
 			mockDB.EXPECT().InsertReservation(gomock.Any()).Return(1, nil)
 			mockDB.EXPECT().InsertRoomRestriction(gomock.Any()).Return(1, nil)
 			mockDB.EXPECT().GetRoom(gomock.Any()).Return(&models.Room{
-				ID:       1,
-				RoomName: "room name",
+				ID:   1,
+				Name: "room name",
 			}, nil)
 			doall(&basicVal, &basicRes, http.StatusSeeOther, "", "/some-url", "POST")
 		})
@@ -218,12 +218,12 @@ var _ = Describe("Handlers", Ordered, func() {
 		It("normal", func() {
 			mockDB.EXPECT().AvailabilityOfAllRooms(gomock.Any(), gomock.Any()).Return([]models.Room{
 				{
-					RoomName: "name 1",
-					ID:       1,
+					Name: "name 1",
+					ID:   1,
 				},
 				{
-					RoomName: "name 2",
-					ID:       2,
+					Name: "name 2",
+					ID:   2,
 				},
 			}, nil)
 			doall(&basicVal, nil, http.StatusOK, "", "/some-url", "POST")
@@ -305,8 +305,8 @@ var _ = Describe("Handlers", Ordered, func() {
 				StartDate: time.Date(2050, 1, 2, 0, 0, 0, 0, time.UTC),
 				EndDate:   time.Date(2050, 1, 3, 0, 0, 0, 0, time.UTC),
 				Room: &models.Room{
-					RoomName: "name",
-					ID:       1,
+					Name: "name",
+					ID:   1,
 				},
 			}
 			handler = h.ReservationSummary
@@ -350,8 +350,8 @@ var _ = Describe("Handlers", Ordered, func() {
 
 		It("test with right data", func() {
 			mockDB.EXPECT().GetRoom(gomock.Eq(1)).Return(&models.Room{
-				ID:       1,
-				RoomName: "room name",
+				ID:   1,
+				Name: "room name",
 			}, nil).AnyTimes()
 			doall(nil, &basicRes, http.StatusSeeOther, "", "/book-room?s=2050-01-01&e=2050-01-02&id=1", "GET")
 		})

@@ -16,8 +16,8 @@ type User struct {
 }
 
 type Room struct {
-	ID        int `bun:",pk,autoincrement"`
-	RoomName  string
+	ID        int       `bun:",pk,autoincrement"`
+	Name      string    `bun:"room_name"`
 	CreatedAt time.Time `bun:",nullzero"`
 	UpdatedAt time.Time `bun:",nullzero"`
 }
@@ -30,17 +30,18 @@ type Restriction struct {
 }
 
 type Reservation struct {
-	ID        int `bun:",pk,autoincrement"`
-	FirstName string
-	LastName  string
-	Email     string
-	Phone     string
-	StartDate time.Time `bun:"type:Date"`
-	EndDate   time.Time `bun:"type:Date"`
-	RoomID    int
-	CreatedAt time.Time `bun:",nullzero"`
-	UpdatedAt time.Time `bun:",nullzero"`
-	Room      *Room     `bun:"-"`
+	ID          int `bun:",pk,autoincrement"`
+	FirstName   string
+	LastName    string
+	Email       string
+	Phone       string
+	StartDate   time.Time `bun:"type:Date"`
+	EndDate     time.Time `bun:"type:Date"`
+	RoomID      int
+	IsProcessed int
+	CreatedAt   time.Time `bun:",nullzero"`
+	UpdatedAt   time.Time `bun:",nullzero"`
+	Room        *Room     `bun:"rel:belongs-to,join:room_id=id"`
 }
 
 type RoomRestriction struct {
@@ -52,7 +53,7 @@ type RoomRestriction struct {
 	RestrictionID int
 	CreatedAt     time.Time    `bun:",nullzero"`
 	UpdatedAt     time.Time    `bun:",nullzero"`
-	Room          *Room        `bun:"-"`
-	Reservation   *Reservation `bun:"-"`
-	Restriction   *Restriction `bun:"-"`
+	Room          *Room        `bun:"rel:belongs-to,join:room_id=id"`
+	Reservation   *Reservation `bun:"rel:belongs-to,join:reservation_id=id"`
+	Restriction   *Restriction `bun:"rel:belongs-to,join:restriction_id=id"`
 }

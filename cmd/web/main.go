@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/gob"
-	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/driver"
@@ -29,13 +28,13 @@ func main() {
 		return
 	}
 
-	fmt.Println("Connecting to DB...")
+	app.InfoLog.Println("Connecting to DB...")
 	db, err := driver.ConnectSQL(dbconfig)
 	if err != nil {
 		app.ErrorLog.Fatal(err)
 		return
 	}
-	fmt.Println("Connection established")
+	app.InfoLog.Println("Connection established")
 	defer db.DB.Close()
 
 	defer close(app.MailChan)
@@ -49,7 +48,7 @@ func main() {
 		Handler: routes(&app, newHandler),
 	}
 
-	fmt.Println("starting application on port", port)
+	app.InfoLog.Println("starting application on port", port)
 	err = server.ListenAndServe()
 	if err != nil {
 		app.ErrorLog.Fatal(err)

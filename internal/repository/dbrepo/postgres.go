@@ -157,7 +157,7 @@ func (pdb *postgresDB) GetReservationByID(id int) (*models.Reservation, error) {
 	defer cancel()
 
 	reservation := new(models.Reservation)
-	err := pdb.DB.NewSelect().Model(reservation).Relation("Room").Where("id=?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(reservation).Relation("Room").Where("reservation.id=?", id).Scan(ctx)
 
 	return reservation, err
 }

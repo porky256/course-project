@@ -12,8 +12,8 @@
 
         <p><strong>Reservation Details</strong><br>
             <strong>Room</strong>: {{$res.Room.Name}} <br>
-            <strong>Arrival</strong>: {{HumanDate index .StringMap "start_date"}} <br>
-            <strong>Departure</strong>: {{HumanDate index .StringMap "end_date"}}
+            <strong>Arrival</strong>: {{HumanDate $res.StartDate}} <br>
+            <strong>Departure</strong>: {{HumanDate $res.EndDate}}
         </p>
         <form method="post" action="" class="" novalidate>
             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
@@ -64,7 +64,7 @@
 
             <hr>
             <input type="submit" class="btn btn-primary" value="Save">
-            <a href="/admin/{{$src}}-reservations" class="btn btn-warning" value="Cancel"></a>
+            <a href="/admin/{{$src}}-reservations" class="btn btn-warning">Cancel</a>
         </form>
     </div>
 {{end}}

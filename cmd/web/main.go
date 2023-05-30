@@ -15,6 +15,7 @@ import (
 	"time"
 )
 
+const host = "localhost:8080"
 const port = ":8080"
 
 // TODO move it to context
@@ -44,7 +45,7 @@ func main() {
 	newHandler := handlers.NewHandlers(&app, newRender, db)
 
 	server := http.Server{
-		Addr:    port,
+		Addr:    host,
 		Handler: routes(&app, newHandler),
 	}
 

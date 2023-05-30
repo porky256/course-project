@@ -49,8 +49,8 @@ run-db:
 stop-db:
 	docker-compose stop db
 
-.PHONY: gen-repo-mock
-gen-repo-mock:
+.PHONY: mock
+mock:
 	mockgen -source ./internal/repository/repository.go -destination ./internal/repository/mock/mock.go
 
 migration-up:

@@ -96,6 +96,21 @@ func (mr *MockDatabaseRepoMockRecorder) GetNewReservations() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetNewReservations", reflect.TypeOf((*MockDatabaseRepo)(nil).GetNewReservations))
 }
 
+// GetReservationByID mocks base method.
+func (m *MockDatabaseRepo) GetReservationByID(id int) (*models.Reservation, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetReservationByID", id)
+	ret0, _ := ret[0].(*models.Reservation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetReservationByID indicates an expected call of GetReservationByID.
+func (mr *MockDatabaseRepoMockRecorder) GetReservationByID(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReservationByID", reflect.TypeOf((*MockDatabaseRepo)(nil).GetReservationByID), id)
+}
+
 // GetRoomByID mocks base method.
 func (m *MockDatabaseRepo) GetRoomByID(id int) (*models.Room, error) {
 	m.ctrl.T.Helper()

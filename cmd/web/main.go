@@ -64,6 +64,7 @@ func run() error {
 	gob.Register(models.User{})
 	gob.Register(models.Restriction{})
 	gob.Register(models.RoomRestriction{})
+	gob.Register(map[string]int{})
 	dbconfig = config.DBConfig{
 		Dsn:           "postgres://postgres:2341@0.0.0.0:5432/db?sslmode=disable",
 		MaxOpenDbConn: 10,

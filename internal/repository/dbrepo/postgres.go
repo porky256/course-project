@@ -204,3 +204,18 @@ func (pdb *postgresDB) GetAllRooms() ([]models.Room, error) {
 	err := pdb.DB.NewSelect().Model(&rooms).Scan(ctx)
 	return rooms, err
 }
+
+func (pdb *postgresDB) GetRoomRestrictionsByRoomIdWithinDates(roomID int, start, end time.Time) ([]models.RoomRestriction, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	var roomRestrictions []models.RoomRestriction
+
+	err := pdb.DB.NewSelect().Model(&roomRestrictions).
+		Where("room_restriction.room_id=?", roomID).
+		Where("room_restriction.start_date>=?", start).
+		Where("room_restriction.end_date<?", end).
+		Relation("Reservation").Scan(ctx)
+
+	return roomRestrictions, err
+}

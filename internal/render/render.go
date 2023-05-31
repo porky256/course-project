@@ -89,8 +89,8 @@ func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Templat
 		name := filepath.Base(page)
 		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
-			app.ErrorLog.Println("error occurred while parsing page:", err)
-			return cache, fmt.Errorf("error occurred while parsing page: %s", err)
+			app.ErrorLog.Printf("error occurred while parsing page %s:%e \n", name, err)
+			return cache, fmt.Errorf("error occurred while parsing page %s:%e", name, err)
 		}
 
 		layouts, err := filepath.Glob(app.RootPath + "/static/templates/*layout.tmpl")

@@ -155,6 +155,21 @@ func (mr *MockDatabaseRepoMockRecorder) GetRoomByID(id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomByID", reflect.TypeOf((*MockDatabaseRepo)(nil).GetRoomByID), id)
 }
 
+// GetRoomRestrictionsByRoomIdWithinDates mocks base method.
+func (m *MockDatabaseRepo) GetRoomRestrictionsByRoomIdWithinDates(roomID int, start, end time.Time) ([]models.RoomRestriction, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRoomRestrictionsByRoomIdWithinDates", roomID, start, end)
+	ret0, _ := ret[0].([]models.RoomRestriction)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetRoomRestrictionsByRoomIdWithinDates indicates an expected call of GetRoomRestrictionsByRoomIdWithinDates.
+func (mr *MockDatabaseRepoMockRecorder) GetRoomRestrictionsByRoomIdWithinDates(roomID, start, end interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRoomRestrictionsByRoomIdWithinDates", reflect.TypeOf((*MockDatabaseRepo)(nil).GetRoomRestrictionsByRoomIdWithinDates), roomID, start, end)
+}
+
 // GetUserByID mocks base method.
 func (m *MockDatabaseRepo) GetUserByID(id int) (*models.User, error) {
 	m.ctrl.T.Helper()

@@ -85,10 +85,9 @@ func (h *Handlers) AdminReservationCalendar(w http.ResponseWriter, r *http.Reque
 
 	y, m, _ := now.Date()
 	intMap := make(map[string]int)
-	intMap["number_of_days"] =
-		time.Date(y, m, 1, 0, 0, 0, 0, time.UTC).
-			AddDate(0, 1, -1).
-			Day()
+	firstDayOfMonth := time.Date(y, m, 1, 0, 0, 0, 0, time.UTC)
+	lastDayOfMonth := firstDayOfMonth.AddDate(0, 1, -1)
+	intMap["number_of_days"] = lastDayOfMonth.Day()
 
 	data := make(map[string]interface{})
 	data["now"] = now
@@ -104,6 +103,39 @@ func (h *Handlers) AdminReservationCalendar(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	data["rooms"] = rooms
+
+	for _, room := range rooms {
+		reservationMap := make(map[string]int)
+		blockMap := make(map[string]int)
+
+		for current := firstDayOfMonth; !current.After(lastDayOfMonth); current = current.AddDate(0, 0, 1) {
+			reservationMap[current.Format("2006-01-2")] = 0
+			blockMap[current.Format("2006-01-2")] = 0
+		}
+		roomRestrictions, err := h.DB.GetRoomRestrictionsByRoomIdWithinDates(room.ID, firstDayOfMonth, lastDayOfMonth.AddDate(0, 0, 1))
+		if err != nil {
+			h.app.ErrorLog.Println(err)
+			h.app.Session.Put(r.Context(), "error", "can't get room restrictions")
+			http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+			return
+		}
+		for _, rr := range roomRestrictions {
+			if rr.Reservation != nil {
+				for current := rr.Reservation.StartDate; !current.Equal(rr.Reservation.EndDate); current = current.AddDate(0, 0, 1) {
+					reservationMap[current.Format("2006-01-2")] = rr.ReservationID
+				}
+			} else {
+				for current := rr.StartDate; !current.Equal(rr.EndDate); current = current.AddDate(0, 0, 1) {
+					blockMap[current.Format("2006-01-2")] = rr.ID
+				}
+			}
+		}
+
+		data[fmt.Sprintf("reservation_map_%d", room.ID)] = reservationMap
+		data[fmt.Sprintf("block_map_%d", room.ID)] = blockMap
+
+		h.app.Session.Put(r.Context(), fmt.Sprintf("block_map_%d", room.ID), blockMap)
+	}
 
 	err = h.render.Template(w, r, "admin.reservation-calendar.page.tmpl", &models.TemplateData{
 		StringMap: stringMap,

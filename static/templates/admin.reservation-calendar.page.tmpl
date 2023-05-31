@@ -9,6 +9,8 @@
     {{$now := index .Data "now"}}
     {{$rooms := index .Data "rooms"}}
     {{$dim := index .IntMap "number_of_days"}}
+    {{$curYear := index .StringMap "now_year"}}
+    {{$curMonth := index .StringMap "now_month"}}
     <div class="col-md-12">
         <div class="text-center">
             <h3>{{formatTime $now "January"}} {{formatTime $now "2006"}}</h3>
@@ -26,6 +28,8 @@
 
         {{range $rooms}}
             {{$roomID := .ID}}
+            {{$block := index $.Data (printf "block_map_%d" .ID)}}
+            {{$reservation := index $.Data (printf "reservation_map_%d" .ID)}}
 
             <h4 class="mt-4">{{.Name}}</h4>
 
@@ -42,7 +46,23 @@
                     <tr class="table-dark">
                         {{range $index:= $dM}}
                             <td class="text-center">
-                                <input type="checkbox">
+                                {{$mapIndex := (printf "%s-%s-%d" $curYear $curMonth $index)}}
+                                {{if gt (index $reservation $mapIndex) 0}}
+
+                                    <a href="/admin/reservations/cal/{{index $reservation $mapIndex}}">
+                                        <span class="text-danger">R</span>
+                                    </a>
+                                {{else}}
+                                <input
+                                        {{if gt (index $block $mapIndex) 0}}
+                                            checked
+                                            name="remove_block_{{$roomID}}_{{$mapIndex}}"
+                                            value="{{index $block $mapIndex}}"
+                                        {{else}}
+                                            name="add_block_{{$roomID}}_{{$mapIndex}}"
+                                        {{end}}
+                                        type="checkbox">
+                                {{end}}
                             </td>
                         {{end}}
                     </tr>

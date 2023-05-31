@@ -23,4 +23,5 @@ type DatabaseRepo interface {
 	DeleteReservationByID(id int) error
 	UpdateReservationProcessed(id, processed int) error
 	GetAllRooms() ([]models.Room, error)
+	GetRoomRestrictionsByRoomIdWithinDates(roomID int, start, end time.Time) ([]models.RoomRestriction, error)
 }

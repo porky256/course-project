@@ -194,3 +194,13 @@ func (pdb *postgresDB) UpdateReservationProcessed(id, processed int) error {
 	_, err := pdb.DB.NewUpdate().Model(&modelToUpdate).WherePK().Column("is_processed").Exec(ctx)
 	return err
 }
+
+func (pdb *postgresDB) GetAllRooms() ([]models.Room, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	var rooms []models.Room
+
+	err := pdb.DB.NewSelect().Model(&rooms).Scan(ctx)
+	return rooms, err
+}

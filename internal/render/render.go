@@ -13,7 +13,9 @@ import (
 )
 
 var functions = template.FuncMap{
-	"HumanDate": humanDate,
+	"humanDate":  humanDate,
+	"formatTime": formatTime,
+	"makeRange":  makeRange,
 }
 
 type Render struct {
@@ -22,8 +24,20 @@ type Render struct {
 
 const dateLayout = "2006-01-02"
 
-func humanDate(t *time.Time) string {
+func humanDate(t time.Time) string {
 	return t.Format(dateLayout)
+}
+
+func formatTime(t time.Time, layout string) string {
+	return t.Format(layout)
+}
+
+func makeRange(start, end, step int) []int {
+	var ans []int
+	for i := start; i <= end; i += step {
+		ans = append(ans, i)
+	}
+	return ans
 }
 
 // NewRender creates new render entity
@@ -73,7 +87,6 @@ func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Templat
 
 	for _, page := range files {
 		name := filepath.Base(page)
-
 		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
 			app.ErrorLog.Println("error occurred while parsing page:", err)

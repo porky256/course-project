@@ -74,7 +74,10 @@ func run() error {
 
 	app.RootPath = "./"
 	cache, err := render.CreateTemplateCacheMap(&app)
-
+	if err != nil {
+		app.ErrorLog.Fatal("can't create template cache: ", err)
+		return err
+	}
 	//change it when production
 	app.IsProduction = false
 
@@ -92,10 +95,6 @@ func run() error {
 	app.MailChan = make(chan models.MailData)
 
 	app.Session = session
-	if err != nil {
-		app.ErrorLog.Fatal("can't create template cache: ", err)
-		return err
-	}
 
 	helpers.NewHelpers(&app)
 	return nil

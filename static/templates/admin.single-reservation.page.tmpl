@@ -12,8 +12,8 @@
 
         <strong>Reservation Details</strong><br>
         <strong>Room</strong>: {{$res.Room.Name}} <br>
-        <strong>Arrival</strong>: {{HumanDate $res.StartDate}} <br>
-        <strong>Departure</strong>: {{HumanDate $res.EndDate}}
+        <strong>Arrival</strong>: {{humanDate $res.StartDate}} <br>
+        <strong>Departure</strong>: {{humanDate $res.EndDate}}
 
         <form method="post" action="" class="" novalidate>
             <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">

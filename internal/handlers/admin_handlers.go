@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func (h *Handlers) AdminDashboard(w http.ResponseWriter, r *http.Request) {
@@ -53,7 +54,62 @@ func (h *Handlers) AdminNewReservations(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handlers) AdminReservationCalendar(w http.ResponseWriter, r *http.Request) {
-	err := h.render.Template(w, r, "admin.reservation-calendar.page.tmpl", &models.TemplateData{})
+	now := time.Now()
+	if r.URL.Query().Get("y") != "" {
+		year, err := strconv.Atoi(r.URL.Query().Get("y"))
+		if err != nil {
+			h.app.ErrorLog.Println(err)
+			h.app.Session.Put(r.Context(), "error", fmt.Sprintf("can't get year from url: %s", r.RequestURI))
+			http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+			return
+		}
+		month, err := strconv.Atoi(r.URL.Query().Get("m"))
+		if err != nil {
+			h.app.ErrorLog.Println(err)
+			h.app.Session.Put(r.Context(), "error", fmt.Sprintf("can't get month from url: %s", r.RequestURI))
+			http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+			return
+		}
+		now = time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
+	}
+
+	last := now.AddDate(0, -1, 0)
+	next := now.AddDate(0, 1, 0)
+	stringMap := make(map[string]string)
+	stringMap["last_month"] = last.Format("01")
+	stringMap["last_year"] = last.Format("2006")
+	stringMap["next_month"] = next.Format("01")
+	stringMap["next_year"] = next.Format("2006")
+	stringMap["now_month"] = now.Format("01")
+	stringMap["now_year"] = now.Format("2006")
+
+	y, m, _ := now.Date()
+	intMap := make(map[string]int)
+	intMap["number_of_days"] =
+		time.Date(y, m, 1, 0, 0, 0, 0, time.UTC).
+			AddDate(0, 1, -1).
+			Day()
+
+	data := make(map[string]interface{})
+	data["now"] = now
+	data["last"] = last
+	data["next"] = next
+
+	rooms, err := h.DB.GetAllRooms()
+
+	if err != nil {
+		h.app.ErrorLog.Println(err)
+		h.app.Session.Put(r.Context(), "error", "can't get rooms")
+		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		return
+	}
+	data["rooms"] = rooms
+
+	err = h.render.Template(w, r, "admin.reservation-calendar.page.tmpl", &models.TemplateData{
+		StringMap: stringMap,
+		IntMap:    intMap,
+		Data:      data,
+	})
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 	}
@@ -63,6 +119,7 @@ func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request
 	exploded := strings.Split(r.RequestURI, "/")
 	if len(exploded) != 5 {
 		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		h.app.Session.Put(r.Context(), "error", "incorrect request url")
 		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
 	}
 

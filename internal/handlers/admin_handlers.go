@@ -149,10 +149,11 @@ func (h *Handlers) AdminReservationCalendar(w http.ResponseWriter, r *http.Reque
 
 func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.RequestURI, "/")
-	if len(exploded) < 5 {
+	if len(exploded) != 6 {
 		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
 		h.app.Session.Put(r.Context(), "error", "incorrect request url")
 		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		return
 	}
 
 	stringMap := make(map[string]string)
@@ -160,7 +161,10 @@ func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request
 
 	year := r.URL.Query().Get("y")
 	month := r.URL.Query().Get("m")
-
+	redirectString := fmt.Sprintf("/admin/%s-reservations", exploded[3])
+	if month != "" && year != "" {
+		redirectString = fmt.Sprintf("/admin/reservation-calendar?y=%s&m=%s", year, month)
+	}
 	stringMap["year"] = year
 	stringMap["month"] = month
 
@@ -168,14 +172,14 @@ func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "wrong id")
-		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		http.Redirect(w, r, redirectString, http.StatusSeeOther)
 		return
 	}
 	reservation, err := h.DB.GetReservationByID(id)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "can't find reservation")
-		http.Redirect(w, r, fmt.Sprintf("/admin/%s-reservations", exploded[3]), http.StatusSeeOther)
+		http.Redirect(w, r, redirectString, http.StatusSeeOther)
 		return
 	}
 	data := make(map[string]interface{})
@@ -193,9 +197,11 @@ func (h *Handlers) AdminSingleReservation(w http.ResponseWriter, r *http.Request
 func (h *Handlers) AdminPostSingleReservation(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.RequestURI, "/")
 
-	if len(exploded) < 5 {
+	if len(exploded) != 6 {
 		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		h.app.Session.Put(r.Context(), "error", "incorrect request url")
 		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		return
 	}
 
 	id, err := strconv.Atoi(exploded[4])
@@ -242,10 +248,11 @@ func (h *Handlers) AdminPostSingleReservation(w http.ResponseWriter, r *http.Req
 
 func (h *Handlers) AdminProcessReservation(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.RequestURI, "/")
-
-	if len(exploded) != 5 {
+	if len(exploded) != 6 {
 		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		h.app.Session.Put(r.Context(), "error", "incorrect request url")
 		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		return
 	}
 
 	redirectString := fmt.Sprintf("/admin/%s-reservations", exploded[3])
@@ -278,9 +285,11 @@ func (h *Handlers) AdminProcessReservation(w http.ResponseWriter, r *http.Reques
 func (h *Handlers) AdminDeleteReservation(w http.ResponseWriter, r *http.Request) {
 	exploded := strings.Split(r.RequestURI, "/")
 
-	if len(exploded) < 5 {
+	if len(exploded) != 6 {
 		h.app.ErrorLog.Printf("incorrect request url: %s", r.RequestURI)
+		h.app.Session.Put(r.Context(), "error", "incorrect request url")
 		http.Redirect(w, r, "/admin/dashboard", http.StatusSeeOther)
+		return
 	}
 
 	redirectString := fmt.Sprintf("/admin/%s-reservations", exploded[3])
@@ -301,7 +310,7 @@ func (h *Handlers) AdminDeleteReservation(w http.ResponseWriter, r *http.Request
 	err = h.DB.DeleteReservationByID(id)
 	if err != nil {
 		h.app.ErrorLog.Println(err)
-		h.app.Session.Put(r.Context(), "error", "can't update reservation")
+		h.app.Session.Put(r.Context(), "error", "can't delete reservation")
 		http.Redirect(w, r, redirectString, http.StatusSeeOther)
 		return
 	}
@@ -320,6 +329,7 @@ func (h *Handlers) AdminPostReservationCalendar(w http.ResponseWriter, r *http.R
 	}
 
 	year, err := strconv.Atoi(r.Form.Get("y"))
+	fmt.Println(year, r.Form.Get("y"))
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "wrong year")
@@ -327,6 +337,7 @@ func (h *Handlers) AdminPostReservationCalendar(w http.ResponseWriter, r *http.R
 		return
 	}
 	month, err := strconv.Atoi(r.Form.Get("m"))
+	fmt.Println(month, r.Form.Get("m"))
 	if err != nil {
 		h.app.ErrorLog.Println(err)
 		h.app.Session.Put(r.Context(), "error", "wrong month")
@@ -353,8 +364,11 @@ func (h *Handlers) AdminPostReservationCalendar(w http.ResponseWriter, r *http.R
 			return
 		}
 		for name, value := range curMap {
+			fmt.Println("both", name, value)
+			fmt.Println(form.Has(fmt.Sprintf("remove_block_%d_%s", room.ID, name)))
 			if value > 0 {
 				if !form.Has(fmt.Sprintf("remove_block_%d_%s", room.ID, name)) {
+					fmt.Println("pizdit")
 					err = h.DB.DeleteRoomRestrictionByID(value)
 					if err != nil {
 						h.app.ErrorLog.Println(err)
@@ -380,7 +394,7 @@ func (h *Handlers) AdminPostReservationCalendar(w http.ResponseWriter, r *http.R
 			date, err := time.Parse("2006-01-02", exploded[3])
 			if err != nil {
 				h.app.ErrorLog.Println(err)
-				h.app.Session.Put(r.Context(), "error", fmt.Sprintf("can't parse day %s", name))
+				h.app.Session.Put(r.Context(), "error", fmt.Sprintf("can't parse date %s", name))
 				http.Redirect(w, r, fmt.Sprintf("/admin/reservation-calendar?y=%d&m=%d", year, month), http.StatusSeeOther)
 				return
 			}

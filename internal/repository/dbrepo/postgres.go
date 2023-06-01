@@ -57,7 +57,7 @@ func (pdb *postgresDB) InsertRoomRestriction(rmres *models.RoomRestriction) (int
 	return newID, err
 }
 
-// LookForAvailabilityOfRoom looks if the room is available
+// LookForAvailabilityOfRoom search if the room is available
 func (pdb *postgresDB) LookForAvailabilityOfRoom(start, end time.Time, roomID int) (bool, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
@@ -70,7 +70,7 @@ func (pdb *postgresDB) LookForAvailabilityOfRoom(start, end time.Time, roomID in
 	return numberRows == 0, err
 }
 
-// AvailabilityOfAllRooms looks for any room available on passed dates
+// AvailabilityOfAllRooms search for any room available on passed dates
 func (pdb *postgresDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
@@ -87,21 +87,21 @@ func (pdb *postgresDB) AvailabilityOfAllRooms(start, end time.Time) ([]models.Ro
 	return rooms, err
 }
 
-// GetRoomByID looks for room by id
+// GetRoomByID search for room by id
 func (pdb *postgresDB) GetRoomByID(id int) (*models.Room, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	room := new(models.Room)
-	err := pdb.DB.NewSelect().Model(&room).Where("id=?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(room).Where("id=?", id).Scan(ctx)
 	return room, err
 }
 
-// GetUserByID looks for user by id
+// GetUserByID search for user by id
 func (pdb *postgresDB) GetUserByID(id int) (*models.User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 	user := new(models.User)
-	err := pdb.DB.NewSelect().Model(&user).Where("id=?", id).Scan(ctx)
+	err := pdb.DB.NewSelect().Model(user).Where("id=?", id).Scan(ctx)
 	return user, err
 }
 
@@ -127,4 +127,118 @@ func (pdb *postgresDB) Authenticate(email, passwordSample string) (int, string, 
 	}
 
 	return user.ID, user.Password, nil
+}
+
+// GetAllReservations search for all reservations
+func (pdb *postgresDB) GetAllReservations() ([]models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	reservations := make([]models.Reservation, 0)
+	err := pdb.DB.NewSelect().Model(&reservations).Relation("Room").Scan(ctx)
+
+	return reservations, err
+}
+
+// GetNewReservations search for new reservations
+func (pdb *postgresDB) GetNewReservations() ([]models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	reservations := make([]models.Reservation, 0)
+	err := pdb.DB.NewSelect().Model(&reservations).Relation("Room").Where("is_processed=0").Scan(ctx)
+
+	return reservations, err
+}
+
+// GetReservationByID search for reservation by id
+func (pdb *postgresDB) GetReservationByID(id int) (*models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	reservation := new(models.Reservation)
+	err := pdb.DB.NewSelect().Model(reservation).Relation("Room").Where("reservation.id=?", id).Scan(ctx)
+
+	return reservation, err
+}
+
+// UpdateReservation updates reservation
+func (pdb *postgresDB) UpdateReservation(ur models.Reservation) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	_, err := pdb.DB.NewUpdate().Model(&ur).
+		Column("first_name", "last_name", "email", "phone").
+		WherePK().Exec(ctx)
+	return err
+}
+
+// DeleteReservation deletes reservation
+func (pdb *postgresDB) DeleteReservationByID(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	_, err := pdb.DB.NewDelete().Table("reservations").Where("id=?", id).Exec(ctx)
+	return err
+}
+
+// UpdateReservationProcessed updates is_processed field in reservation
+func (pdb *postgresDB) UpdateReservationProcessed(id, processed int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	modelToUpdate := models.Reservation{
+		ID:          id,
+		IsProcessed: processed,
+	}
+	_, err := pdb.DB.NewUpdate().Model(&modelToUpdate).WherePK().Column("is_processed").Exec(ctx)
+	return err
+}
+
+func (pdb *postgresDB) GetAllRooms() ([]models.Room, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	var rooms []models.Room
+
+	err := pdb.DB.NewSelect().Model(&rooms).Scan(ctx)
+	return rooms, err
+}
+
+func (pdb *postgresDB) GetRoomRestrictionsByRoomIdWithinDates(roomID int, start, end time.Time) ([]models.RoomRestriction, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	var roomRestrictions []models.RoomRestriction
+
+	err := pdb.DB.NewSelect().Model(&roomRestrictions).
+		Where("room_restriction.room_id=?", roomID).
+		Where("room_restriction.start_date>=?", start).
+		Where("room_restriction.end_date<?", end).
+		Relation("Reservation").Scan(ctx)
+
+	return roomRestrictions, err
+}
+
+func (pdb *postgresDB) AddSingleDayRoomRestriction(roomID, restrictionID int, start time.Time) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	restriction := models.RoomRestriction{
+		StartDate:     start,
+		EndDate:       start.AddDate(0, 0, 1),
+		RoomID:        roomID,
+		RestrictionID: restrictionID,
+	}
+	var newID int
+	err := pdb.DB.NewInsert().Model(&restriction).Returning("id").Scan(ctx, &newID)
+	return newID, err
+}
+
+func (pdb *postgresDB) DeleteRoomRestrictionByID(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	_, err := pdb.DB.NewDelete().Table("room_restrictions").Where("id=?", id).Exec(ctx)
+	return err
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/gob"
-	"fmt"
 	"github.com/alexedwards/scs/v2"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/driver"
@@ -16,6 +15,7 @@ import (
 	"time"
 )
 
+const host = "localhost:8080"
 const port = ":8080"
 
 // TODO move it to context
@@ -29,13 +29,13 @@ func main() {
 		return
 	}
 
-	fmt.Println("Connecting to DB...")
+	app.InfoLog.Println("Connecting to DB...")
 	db, err := driver.ConnectSQL(dbconfig)
 	if err != nil {
 		app.ErrorLog.Fatal(err)
 		return
 	}
-	fmt.Println("Connection established")
+	app.InfoLog.Println("Connection established")
 	defer db.DB.Close()
 
 	defer close(app.MailChan)
@@ -45,15 +45,16 @@ func main() {
 	newHandler := handlers.NewHandlers(&app, newRender, db)
 
 	server := http.Server{
-		Addr:    port,
+		Addr:    host,
 		Handler: routes(&app, newHandler),
 	}
 
-	fmt.Println("starting application on port", port)
+	app.InfoLog.Println("starting application on port", port)
 	err = server.ListenAndServe()
 	if err != nil {
 		app.ErrorLog.Fatal(err)
 	}
+	time.Date(1, 2, 3, 4, 5, 6, 7, time.UTC)
 }
 
 // run registers and initializes application
@@ -63,6 +64,7 @@ func run() error {
 	gob.Register(models.User{})
 	gob.Register(models.Restriction{})
 	gob.Register(models.RoomRestriction{})
+	gob.Register(map[string]int{})
 	dbconfig = config.DBConfig{
 		Dsn:           "postgres://postgres:2341@0.0.0.0:5432/db?sslmode=disable",
 		MaxOpenDbConn: 10,
@@ -73,7 +75,10 @@ func run() error {
 
 	app.RootPath = "./"
 	cache, err := render.CreateTemplateCacheMap(&app)
-
+	if err != nil {
+		app.ErrorLog.Fatal("can't create template cache: ", err)
+		return err
+	}
 	//change it when production
 	app.IsProduction = false
 
@@ -91,10 +96,6 @@ func run() error {
 	app.MailChan = make(chan models.MailData)
 
 	app.Session = session
-	if err != nil {
-		app.ErrorLog.Fatal("can't create template cache: ", err)
-		return err
-	}
 
 	helpers.NewHelpers(&app)
 	return nil

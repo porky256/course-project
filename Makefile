@@ -11,7 +11,7 @@ build:
 
 .PHONY: air
 air:
-	cd ./cmd/web && air -c .air.toml
+	air -c .air.toml
 
 .PHONY: run
 run: build
@@ -49,12 +49,15 @@ run-db:
 stop-db:
 	docker-compose stop db
 
+.PHONY: mock
+mock:
+	mockgen -source ./internal/repository/repository.go -destination ./internal/repository/mock/mock.go
+
 migration-up:
-	printenv
 	migrate -path data/migrations -database 'postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@0.0.0.0:5432/$(POSTGRES_DB)?sslmode=disable' up
 
 migration-down:
 	migrate -path data/migrations -database 'postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@0.0.0.0:5432/$(POSTGRES_DB)?sslmode=disable' down
 
 create-new-migration:
-	migrate create -ext .sql -dir data/migrations seed-restrictions
+	migrate create -ext .sql -dir data/migrations

@@ -9,10 +9,35 @@ import (
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 )
+
+var functions = template.FuncMap{
+	"humanDate":  humanDate,
+	"formatTime": formatTime,
+	"makeRange":  makeRange,
+}
 
 type Render struct {
 	app *config.AppConfig
+}
+
+const dateLayout = "2006-01-02"
+
+func humanDate(t time.Time) string {
+	return t.Format(dateLayout)
+}
+
+func formatTime(t time.Time, layout string) string {
+	return t.Format(layout)
+}
+
+func makeRange(start, end, step int) []int {
+	var ans []int
+	for i := start; i <= end; i += step {
+		ans = append(ans, i)
+	}
+	return ans
 }
 
 // NewRender creates new render entity
@@ -62,11 +87,10 @@ func CreateTemplateCacheMap(app *config.AppConfig) (map[string]*template.Templat
 
 	for _, page := range files {
 		name := filepath.Base(page)
-
-		ts, err := template.New(name).ParseFiles(page)
+		ts, err := template.New(name).Funcs(functions).ParseFiles(page)
 		if err != nil {
-			app.ErrorLog.Println("error occurred while parsing page:", err)
-			return cache, fmt.Errorf("error occurred while parsing page: %s", err)
+			app.ErrorLog.Printf("error occurred while parsing page %s:%e \n", name, err)
+			return cache, fmt.Errorf("error occurred while parsing page %s:%e", name, err)
 		}
 
 		layouts, err := filepath.Glob(app.RootPath + "/static/templates/*layout.tmpl")
@@ -95,8 +119,9 @@ func (r *Render) addDefaultData(td *models.TemplateData, req *http.Request) *mod
 	td.Error = r.app.Session.PopString(req.Context(), "error")
 	td.Warning = r.app.Session.PopString(req.Context(), "warning")
 	td.CSRFToken = nosurf.Token(req)
-	if r.app.Session.Exists(req.Context(), "user_id") {
-		td.IsAuthenticated = 1
-	}
+	//if r.app.Session.Exists(req.Context(), "user_id") {
+	//	td.IsAuthenticated = 1
+	//}
+	td.IsAuthenticated = 1
 	return td
 }

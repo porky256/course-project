@@ -2,3 +2,7 @@
 .coverage-report.out
 bookings
 .env
+cmd/web/tmp
+cmd/web/.air.toml
+tmp
+.air.toml

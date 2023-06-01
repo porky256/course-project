@@ -49,11 +49,11 @@ type RoomRestriction struct {
 	StartDate     time.Time `bun:"type:Date"`
 	EndDate       time.Time `bun:"type:Date"`
 	RoomID        int
-	ReservationID int
+	ReservationID int `bun:",nullzero"`
 	RestrictionID int
 	CreatedAt     time.Time    `bun:",nullzero"`
 	UpdatedAt     time.Time    `bun:",nullzero"`
 	Room          *Room        `bun:"rel:belongs-to,join:room_id=id"`
-	Reservation   *Reservation `bun:"rel:belongs-to,join:reservation_id=id"`
+	Reservation   *Reservation `bun:"rel:has-one,join:reservation_id=id"`
 	Restriction   *Restriction `bun:"rel:belongs-to,join:restriction_id=id"`
 }

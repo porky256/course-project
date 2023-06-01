@@ -219,3 +219,26 @@ func (pdb *postgresDB) GetRoomRestrictionsByRoomIdWithinDates(roomID int, start,
 
 	return roomRestrictions, err
 }
+
+func (pdb *postgresDB) AddSingleDayRoomRestriction(roomID, restrictionID int, start time.Time) (int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	restriction := models.RoomRestriction{
+		StartDate:     start,
+		EndDate:       start.AddDate(0, 0, 1),
+		RoomID:        roomID,
+		RestrictionID: restrictionID,
+	}
+	var newID int
+	err := pdb.DB.NewInsert().Model(&restriction).Returning("id").Scan(ctx, &newID)
+	return newID, err
+}
+
+func (pdb *postgresDB) DeleteRoomRestrictionByID(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
+	defer cancel()
+
+	_, err := pdb.DB.NewDelete().Table("room_restrictions").Where("id=?", id).Exec(ctx)
+	return err
+}

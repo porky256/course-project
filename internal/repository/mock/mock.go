@@ -35,6 +35,21 @@ func (m *MockDatabaseRepo) EXPECT() *MockDatabaseRepoMockRecorder {
 	return m.recorder
 }
 
+// AddSingleDayRoomRestriction mocks base method.
+func (m *MockDatabaseRepo) AddSingleDayRoomRestriction(roomID, restrictionID int, start time.Time) (int, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddSingleDayRoomRestriction", roomID, restrictionID, start)
+	ret0, _ := ret[0].(int)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// AddSingleDayRoomRestriction indicates an expected call of AddSingleDayRoomRestriction.
+func (mr *MockDatabaseRepoMockRecorder) AddSingleDayRoomRestriction(roomID, restrictionID, start interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddSingleDayRoomRestriction", reflect.TypeOf((*MockDatabaseRepo)(nil).AddSingleDayRoomRestriction), roomID, restrictionID, start)
+}
+
 // Authenticate mocks base method.
 func (m *MockDatabaseRepo) Authenticate(email, passwordSample string) (int, string, error) {
 	m.ctrl.T.Helper()
@@ -78,6 +93,20 @@ func (m *MockDatabaseRepo) DeleteReservationByID(id int) error {
 func (mr *MockDatabaseRepoMockRecorder) DeleteReservationByID(id interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteReservationByID", reflect.TypeOf((*MockDatabaseRepo)(nil).DeleteReservationByID), id)
+}
+
+// DeleteRoomRestrictionByID mocks base method.
+func (m *MockDatabaseRepo) DeleteRoomRestrictionByID(id int) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteRoomRestrictionByID", id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteRoomRestrictionByID indicates an expected call of DeleteRoomRestrictionByID.
+func (mr *MockDatabaseRepoMockRecorder) DeleteRoomRestrictionByID(id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteRoomRestrictionByID", reflect.TypeOf((*MockDatabaseRepo)(nil).DeleteRoomRestrictionByID), id)
 }
 
 // GetAllReservations mocks base method.

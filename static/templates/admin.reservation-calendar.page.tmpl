@@ -26,48 +26,58 @@
 
         <div class="clearfix"></div>
 
-        {{range $rooms}}
-            {{$roomID := .ID}}
-            {{$block := index $.Data (printf "block_map_%d" .ID)}}
-            {{$reservation := index $.Data (printf "reservation_map_%d" .ID)}}
+        <form method="post" action="" novalidate>
+            <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+            <input type="hidden" name="y" value="{{$curYear}}">
+            <input type="hidden" name="m" value="{{$curMonth}}">
+            {{range $rooms}}
+                {{$roomID := .ID}}
+                {{$block := index $.Data (printf "block_map_%d" .ID)}}
+                {{$reservation := index $.Data (printf "reservation_map_%d" .ID)}}
 
-            <h4 class="mt-4">{{.Name}}</h4>
+                <h4 class="mt-4">{{.Name}}</h4>
 
-            <div class="table-response">
-                <table class="table table-bordered table-sm">
-                    <tr class="table-dark">
-                        {{$dM := makeRange 1 $dim 1}}
-                        {{range $index:= $dM}}
-                            <td class = "text-center">
-                                {{$index}}
-                            </td>
-                        {{end}}
-                    </tr>
-                    <tr class="table-dark">
-                        {{range $index:= $dM}}
-                            <td class="text-center">
-                                {{$mapIndex := (printf "%s-%s-%d" $curYear $curMonth $index)}}
-                                {{if gt (index $reservation $mapIndex) 0}}
+                <div class="table-response">
+                    <table class="table table-bordered table-sm">
+                        <tr class="table-dark">
+                            {{$dM := makeRange 1 $dim 1}}
+                            {{range $index:= $dM}}
+                                <td class = "text-center">
+                                    {{$index}}
+                                </td>
+                            {{end}}
+                        </tr>
+                        <tr class="table-dark">
+                            {{range $index:= $dM}}
+                                <td class="text-center">
+                                    {{$mapIndex := (printf "%s-%s-%d" $curYear $curMonth $index)}}
+                                    {{if gt (index $reservation $mapIndex) 0}}
 
-                                    <a href="/admin/reservations/cal/{{index $reservation $mapIndex}}">
-                                        <span class="text-danger">R</span>
-                                    </a>
-                                {{else}}
-                                <input
-                                        {{if gt (index $block $mapIndex) 0}}
-                                            checked
-                                            name="remove_block_{{$roomID}}_{{$mapIndex}}"
-                                            value="{{index $block $mapIndex}}"
-                                        {{else}}
-                                            name="add_block_{{$roomID}}_{{$mapIndex}}"
-                                        {{end}}
-                                        type="checkbox">
-                                {{end}}
-                            </td>
-                        {{end}}
-                    </tr>
-                </table>
-            </div>
-        {{end}}
+                                        <a href="/admin/reservations/cal/{{index $reservation $mapIndex}}/show?y={{$curYear}}&m={{$curMonth}}">
+                                            <span class="text-danger">R</span>
+                                        </a>
+                                    {{else}}
+                                    <input
+                                            {{if gt (index $block $mapIndex) 0}}
+                                                checked
+                                                name="remove_block_{{$roomID}}_{{$mapIndex}}"
+                                                value="{{index $block $mapIndex}}"
+                                            {{else}}
+                                                name="add_block_{{$roomID}}_{{$mapIndex}}"
+                                                value="1"
+                                            {{end}}
+                                            type="checkbox">
+                                    {{end}}
+                                </td>
+                            {{end}}
+                        </tr>
+                    </table>
+                </div>
+            {{end}}
+
+            <hr>
+
+            <input type="submit" class="btn btn-primary" value="Submit">
+        </form>
     </div>
 {{end}}

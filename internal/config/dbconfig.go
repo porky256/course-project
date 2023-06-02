@@ -7,5 +7,10 @@ type DBConfig struct {
 	MaxIdleDbConn int
 	MaxDbLifetime time.Duration
 	MaxDbIdletime time.Duration
-	Dsn           string
+	Host          string
+	Port          string
+	Name          string
+	User          string
+	Password      string
+	SSLMode       string
 }

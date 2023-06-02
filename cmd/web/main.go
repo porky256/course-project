@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/gob"
 	"github.com/alexedwards/scs/v2"
+	"github.com/joho/godotenv"
 	"github.com/porky256/course-project/internal/config"
 	"github.com/porky256/course-project/internal/driver"
 	"github.com/porky256/course-project/internal/handlers"
@@ -65,8 +66,25 @@ func run() error {
 	gob.Register(models.Restriction{})
 	gob.Register(models.RoomRestriction{})
 	gob.Register(map[string]int{})
+
+	godotenv.Load()
+	dbUser, dbPassword, dbName, dbHost, dbPort, dbSSLMode, inProduction, useCache :=
+		os.Getenv("POSTGRES_USER"),
+		os.Getenv("POSTGRES_PASSWORD"),
+		os.Getenv("POSTGRES_DB"),
+		os.Getenv("POSTGRES_HOST"),
+		os.Getenv("POSTGRES_PORT"),
+		os.Getenv("POSTGRES_SSLMODE"),
+		os.Getenv("IN_PRODUCTION"),
+		os.Getenv("USE_CACHE")
+
 	dbconfig = config.DBConfig{
-		Dsn:           "postgres://postgres:2341@0.0.0.0:5432/db?sslmode=disable",
+		User:          dbUser,
+		Password:      dbPassword,
+		Name:          dbName,
+		Host:          dbHost,
+		Port:          dbPort,
+		SSLMode:       dbSSLMode,
 		MaxOpenDbConn: 10,
 		MaxIdleDbConn: 5,
 		MaxDbLifetime: 24 * time.Hour,
@@ -80,7 +98,8 @@ func run() error {
 		return err
 	}
 	//change it when production
-	app.IsProduction = false
+	app.IsProduction = inProduction == "true"
+	app.UseCache = useCache == "true"
 
 	session := scs.New()
 	session.Lifetime = 24 * time.Hour
@@ -89,7 +108,6 @@ func run() error {
 	session.Cookie.Secure = app.IsProduction
 
 	app.TemplateCache = cache
-	app.UseCache = false
 	app.InfoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	app.ErrorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 	app.DateLayout = "2006-01-02"

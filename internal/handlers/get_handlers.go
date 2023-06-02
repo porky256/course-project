@@ -69,20 +69,12 @@ func (h *Handlers) MakeReservation(w http.ResponseWriter, r *http.Request) {
 
 	h.app.Session.Put(r.Context(), "reservation", res)
 
-	sd := res.StartDate.Format(h.app.DateLayout)
-	ed := res.EndDate.Format(h.app.DateLayout)
-
-	stringMap := make(map[string]string)
-	stringMap["start_date"] = sd
-	stringMap["end_date"] = ed
-
 	data := make(map[string]interface{})
 	data["reservation"] = res
 
 	err = h.render.Template(w, r, "make-reservation.page.tmpl", &models.TemplateData{
-		Form:      forms.New(nil),
-		Data:      data,
-		StringMap: stringMap,
+		Form: forms.New(nil),
+		Data: data,
 	})
 	if err != nil {
 		h.app.ErrorLog.Println(err)

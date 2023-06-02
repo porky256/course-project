@@ -16,7 +16,6 @@ type DB struct {
 func ConnectSQL(config config.DBConfig) (*DB, error) {
 	dsn := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
 		config.User, config.Password, config.Host, config.Port, config.Name, config.SSLMode)
-	fmt.Println(dsn)
 	sqldb := sql.OpenDB(pgdriver.NewConnector(pgdriver.WithDSN(dsn)))
 	err := sqldb.Ping()
 	if err != nil {
